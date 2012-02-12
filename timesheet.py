@@ -2,11 +2,14 @@
 
 import mechanize
 import time
-import subprocess 
+from datetime import date, datetime
+from datetime import time as time2 
 
-import keyring
 from BeautifulSoup import BeautifulSoup  
 
+from password import *
+
+DEBUG = True
 
 class Actions(object):
     HOME = 1
@@ -24,40 +27,9 @@ class Actions(object):
         else:
             raise "Client error"
 
-class Password(object):
-    service = 'kartapracy'
-
-    @staticmethod
-    def get(user):
-        while(True):
-            try:
-                password = keyring.get_password(Password.service, user)
-                if password:
-                    return password 
-                else:
-                    raise "no password in keyring"
-            except:
-                Password.read_and_set(user)
-
-    @staticmethod
-    def set(user, password):
-        return keyring.set_password(Password.service, user, password)
-
-    @staticmethod
-    def read_and_set(user):
-        password = subprocess.check_output([
-            'zenity', '--entry', 
-            '--title', 'Karta Pracy password', 
-            '--text',  'Enter your password for Timesheet (%s):' % user, 
-            '--entry-text', 'password', 
-            '--hide-text'
-        ])
-        Password.set(user, password)
-
-
 
 class Timesheet(object):
-
+    
     url = 'http://neubloc.omnis.pl/'
 
     browser = None
@@ -96,7 +68,12 @@ class Timesheet(object):
         self.login()
         self.open()
         self.browser.select_form(nr=0)
-        self.browser.submit(name="action_val", label=self.actions(action))
+
+        if DEBUG:
+            print 'fake submit | action: %s (%s)' % ( action, self.actions[action] )
+            return
+
+        self.browser.submit(name="action_val", label=self.actions[action])
 
     def start(self):
         self.do("start")
@@ -111,8 +88,10 @@ class Timesheet(object):
         return soup.find('span', id='tdh_up_plus').text
 
     # lista 
-    def list(self, timestamp = time.time()):
+    def list(self, date = datetime.now()):
         self.login()
+
+        timestamp = time.mktime(date.timetuple())
         self.open("action_popup.php?date=%s" % int(timestamp))
         page = self.browser.response().get_data()
 
@@ -126,8 +105,9 @@ class Timesheet(object):
             columns = soup.findAll('td', id=None)
             
             if len(columns) > 2:
-                entry = (columns[1].text, columns[2].text)
-                entries.append(entry)
+                entry_time = time2( *time.strptime(columns[1].text,"%H:%M:%S")[3:6] )
+                entry_action = columns[2].text
+                entries.append((entry_time, entry_action))
                 
         return entries
 
