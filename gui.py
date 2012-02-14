@@ -2,15 +2,14 @@
 
 import os, sys
 import signal
+from threading import Thread
 
 ## Gtk 2
 #import Gtk
 ## Gtk 3
-from gi.repository import Gtk, Gio, Gdk
-Gdk.threads_init()
+from gi.repository import Gtk, Gio, Gdk, GLib
 
-
-print os.getenv('DEBUG')
+DEBUG = bool(os.getenv('DEBUG'))
 
 import time
 from datetime import date, datetime, timedelta
@@ -20,10 +19,15 @@ from timesheet import *
         
 class TimesheetUI(Gtk.Application):
 
+    hlist = []
+
     def __init__(self):
         Gtk.Application.__init__(self, application_id="apps.test.helloworld", flags=Gio.ApplicationFlags.FLAGS_NONE)
         #self.connect("activate", self.on_activate)
         self.on_activate()
+
+        #Thread(target=self.count, args=(maximum,)).start()
+        self.today_hours_thr = Thread(target=self._today_hours_thread).start()
 
     ###  signal handlers
     def on_quit(self, widget, data=None):
@@ -53,10 +57,16 @@ class TimesheetUI(Gtk.Application):
         self._reload()
 
     def on_start(self, action):
+        Thread(target=self._on_start).start()
+
+    def _on_start(self):
         self.timesheet.start()
         self._reload()
 
     def on_stop(self, action):
+        Thread(target=self._on_stop).start()
+
+    def _on_stop(self):
         self.timesheet.stop()
         self._reload()
 
@@ -80,14 +90,26 @@ class TimesheetUI(Gtk.Application):
     ### private
 
     def _reload(self):
-        hlist  = self.timesheet.list(datetime.now()) # - timedelta(days=2))
+        if DEBUG:
+            hlist = [
+             (datetime(1,1,1,19, 00, 11).time(), u'DK (Start Dom)'), 
+             (datetime(1,1,1,10, 46, 11).time(), u'DK (Koniec Dom)'), 
+             (datetime(1,1,1,8, 34, 58).time(), u'DS (Start Dom)')
+            ]
+        else:
+            hlist  = self.timesheet.list(datetime.now()) # - timedelta(days=2))
+
+        hlist.reverse()
+        self.hlist = hlist
 
         self._today_hours(hlist)
         self._month_hours(hlist)
         self._hourlists(hlist)
 
     # coun today hourst
-    def _today_hours(self, hlist):
+    def _today_hours(self, hlist=None):
+        if hlist == None: hlist = self.hlist
+
         delta = timedelta(0)
         for h1,h2 in zip(hlist[::2],hlist[1::2]):
             t1 = h1[0]
@@ -98,16 +120,37 @@ class TimesheetUI(Gtk.Application):
             minute = -1 if t2.second >= 30 else 0
             t2 = (datetime.combine(date.today(), t2) - timedelta(minutes=minute, seconds=t2.second))
 
-            delta += (t1 - t2)
+            delta += (t2 - t1)
 
-        if len(hlist):
+        if len(hlist) % 2 == 1:
             delta += datetime.now() - datetime.combine(datetime.now(), hlist[-1][0]) 
 
+        # time remaining
+        try:
+            rdelta = self._timedelta_to_string(timedelta(hours=8) - delta)
+        except OverflowError:
+            rdelta = timedelta(0)
+
+        # time passed
+        delta = self._timedelta_to_string(delta)
+
+        self.today_hours.set_text("""
+            Today hours:
+            Passed: %(passed)s
+            Remaining: %(remaining)s
+            """ % {'passed': delta, 'remaining': rdelta}
+        )
+
+    def _today_hours_thread(self):
+        while True:
+            self._today_hours()
+            time.sleep(1)
+
+    def _timedelta_to_string(self, delta):
         delta_h = delta.seconds/3600
         delta_m = delta.seconds/60 - delta_h*60
         delta_s = delta.seconds    - delta_h*3600 - delta_m*60
-        delta = "%s:%s:%s" % (delta_h, delta_m, delta_s)        
-        self.today_hours.set_text("Today hours:\n%s" % delta)
+        return "%d:%.2d:%.2d" % (delta_h, delta_m, delta_s)        
 
     # month hours bilans
     def _month_hours(self, hlist):
@@ -115,7 +158,6 @@ class TimesheetUI(Gtk.Application):
 
     # formatting for list
     def _hourlists(self, hlist):
-        hlist.reverse()
         hlist = ["%s / %s\n" % (h[0],h[1]) for h in hlist]
         hlist_str = "\n".join(h1+h2 for h1,h2 in zip(hlist[::2], hlist[1::2]))
         if len(hlist) % 2 == 1:
@@ -135,10 +177,15 @@ class TimesheetSignals():
 if __name__ == "__main__":
     app = TimesheetUI()
 
-    #signal.signal(signal.SIGINT, app.quit)
+    #signal.signal(signal.SIGINT, app.on_quit)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+    GLib.threads_init()
+    Gdk.threads_enter()
+
     Gtk.main()
+
+    Gdk.threads_leave()
 
 
 

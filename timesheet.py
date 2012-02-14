@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+import os
 import mechanize
 import time
 from datetime import date, datetime
@@ -9,7 +10,7 @@ from BeautifulSoup import BeautifulSoup
 
 from password import *
 
-DEBUG = True #False
+DEBUG = bool(os.getenv('DEBUG'))
 
 class Actions(object):
     HOME = 1
