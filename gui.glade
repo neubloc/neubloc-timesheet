@@ -9,7 +9,6 @@
     <property name="default_height">200</property>
     <property name="opacity">0.5</property>
     <signal name="destroy" handler="on_quit" swapped="no"/>
-    <signal name="activate-default" handler="on_activate" swapped="no"/>
     <child>
       <object class="GtkHBox" id="box1">
         <property name="visible">True</property>
