@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkAction" id="start_action"/>
-  <object class="GtkAction" id="stop_action"/>
-  <object class="GtkAction" id="toggle_client_home_action"/>
-  <object class="GtkAction" id="toggle_client_neubloc_action"/>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">KartaPracy</property>
@@ -12,6 +8,8 @@
     <property name="default_width">400</property>
     <property name="default_height">200</property>
     <property name="opacity">0.5</property>
+    <signal name="destroy" handler="on_quit" swapped="no"/>
+    <signal name="activate-default" handler="on_activate" swapped="no"/>
     <child>
       <object class="GtkHBox" id="box1">
         <property name="visible">True</property>
@@ -56,12 +54,12 @@
                   <object class="GtkToggleButton" id="client_home">
                     <property name="label" translatable="yes">Dom</property>
                     <property name="use_action_appearance">False</property>
-                    <property name="related_action">toggle_client_home_action</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="related_action">toggle_client_home_action</property>
                     <property name="use_action_appearance">False</property>
+                    <property name="yalign">0.49000000953674316</property>
+                    <signal name="toggled" handler="on_toggle_client" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -73,12 +71,11 @@
                   <object class="GtkToggleButton" id="client_neubloc">
                     <property name="label" translatable="yes">Neubloc</property>
                     <property name="use_action_appearance">False</property>
-                    <property name="related_action">toggle_client_neubloc_action</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="related_action">toggle_client_neubloc_action</property>
                     <property name="use_action_appearance">False</property>
+                    <signal name="toggled" handler="on_toggle_client" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -138,14 +135,13 @@
                   <object class="GtkButton" id="start">
                     <property name="label" translatable="yes">start</property>
                     <property name="use_action_appearance">False</property>
-                    <property name="related_action">start_action</property>
                     <property name="height_request">60</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="related_action">start_action</property>
                     <property name="use_action_appearance">False</property>
                     <property name="use_underline">True</property>
+                    <signal name="clicked" handler="on_start" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -157,13 +153,12 @@
                   <object class="GtkButton" id="stop">
                     <property name="label" translatable="yes">stop</property>
                     <property name="use_action_appearance">False</property>
-                    <property name="related_action">stop_action</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="related_action">stop_action</property>
                     <property name="use_action_appearance">False</property>
                     <property name="use_underline">True</property>
+                    <signal name="clicked" handler="on_stop" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>

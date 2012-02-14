@@ -1,36 +1,42 @@
+#!/usr/bin/env python2
 
 import sys
-import gtk
+import signal
+
+## Gtk 2
+#import Gtk
+## Gtk 3
+from gi.repository import Gtk, Gio
+
 import time
 from datetime import date, datetime, timedelta
 from datetime import time as time2 
 
 from timesheet import *
         
-class TimesheetUI(object):
+class TimesheetUI(Gtk.Application):
 
-    def on_window_destroy(self, widget, data=None):
-        gtk.main_quit()
-     
     def __init__(self):
-    
-        builder = gtk.Builder()
+        Gtk.Application.__init__(self, application_id="apps.test.helloworld", flags=Gio.ApplicationFlags.FLAGS_NONE)
+        self.on_activate()
+
+    def on_quit(self, widget, data=None):
+        Gtk.main_quit()
+     
+    def on_activate(self, data=None):
+        builder = Gtk.Builder()
         builder.add_from_file("gui.glade") 
+        builder.connect_signals(self)       
         
         self.window = builder.get_object("window")
-        builder.connect_signals(self)       
+        self.window.show_all()
 
+        # objects
         self.hourlist = builder.get_object("hourlist")
         self.hours = builder.get_object("hours")
         self.today_hours = builder.get_object("today")
-
         self.toggle_home = builder.get_object("client_home")
         self.toggle_neubloc = builder.get_object("client_neubloc")
-
-        builder.get_object("start_action").connect("activate", self.start)
-        builder.get_object("stop_action").connect("activate", self.stop)
-        builder.get_object("toggle_client_home_action").connect("activate", self.toggle_client)
-        builder.get_object("toggle_client_neubloc_action").connect("activate", self.toggle_client)
 
         self.timesheet = Timesheet()       
         if self.timesheet.client == Actions.HOME:
@@ -41,7 +47,7 @@ class TimesheetUI(object):
         self.reload()
 
     def reload(self):
-        hlist  = self.timesheet.list(datetime.now() - timedelta(days=2))
+        hlist  = self.timesheet.list(datetime.now()) # - timedelta(days=2))
 
         #count
         count = timedelta(0)
@@ -67,23 +73,25 @@ class TimesheetUI(object):
 
         self.hourlist.set_text(hlist) 
 
-    def start(self, action):
+    def on_start(self, action):
         self.timesheet.start()
         self.reload()
 
-    def stop(self, action):
+    def on_stop(self, action):
         self.timesheet.stop()
         self.reload()
 
-    def toggle_client(self, action):
-        if(action.get_name() == 'toggle_client_home_action'):
+    def on_toggle_client(self, button):
+        button_name = Gtk.Buildable.get_name(button) 
+
+        if(button_name == 'client_home'):
             v  = self.toggle_home.get_active()
             self.toggle_neubloc.set_active( (v+1)%2 )
 
             self.timesheet.client = Actions.HOME
             self.timesheet.actions = Actions.get(Actions.HOME)
 
-        if(action.get_name() == 'toggle_client_neubloc_action'):
+        if(button_name == 'client_neubloc'):
             v  = self.toggle_neubloc.get_active()
             self.toggle_home.set_active( (v+1)%2 )
 
@@ -91,10 +99,17 @@ class TimesheetUI(object):
             self.timesheet.actions = Actions.get(Actions.NEUBLOC)
 
 
+class TimesheetSignals():
+    pass
+
+
 if __name__ == "__main__":
     app = TimesheetUI()
-    app.window.show()
-    gtk.main()
+
+    #signal.signal(signal.SIGINT, app.quit)
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    Gtk.main()
 
 
 

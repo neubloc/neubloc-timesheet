@@ -1,4 +1,5 @@
 
+# FIXME: glib warning
 import keyring
 import subprocess
 

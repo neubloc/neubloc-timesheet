@@ -9,7 +9,7 @@ from BeautifulSoup import BeautifulSoup
 
 from password import *
 
-DEBUG = True
+DEBUG = True #False
 
 class Actions(object):
     HOME = 1
