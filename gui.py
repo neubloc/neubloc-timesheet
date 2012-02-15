@@ -1,7 +1,9 @@
 #!/usr/bin/env python2
 
+import vimpdb
 import os, sys
 import signal
+import pdb
 from threading import Thread
 
 ## Gtk 2
@@ -29,14 +31,25 @@ class TimesheetUI(Gtk.Application):
         #Thread(target=self.count, args=(maximum,)).start()
         self.today_hours_thr = Thread(target=self._today_hours_thread).start()
 
+        #vimpdb.set_trace()
+
     ###  signal handlers
     def on_quit(self, widget, data=None):
-        Gtk.main_quit()
+        self._toggle_visibility()
+        return True
      
     def on_activate(self, data=None):
         builder = Gtk.Builder()
         builder.add_from_file("gui.glade") 
         builder.connect_signals(self)       
+
+        # status icon
+        self.statusIcon = Gtk.StatusIcon()
+        self.statusIcon.set_from_file("%s" % 'icon.png')
+        self.statusIcon.set_visible(True)
+        self.statusIcon.connect("activate", self.on_icon_activated)
+        self.statusIcon.connect("popup-menu", self.on_icon_popup)
+
         
         self.window = builder.get_object("window")
         self.window.show_all()
@@ -47,6 +60,10 @@ class TimesheetUI(Gtk.Application):
         self.today_hours = builder.get_object("today")
         self.toggle_home = builder.get_object("client_home")
         self.toggle_neubloc = builder.get_object("client_neubloc")
+
+        self.start = builder.get_object("start")
+        self.stop= builder.get_object("stop")
+        #self.start.set_sensitive(False)
 
         self.timesheet = Timesheet()       
         if self.timesheet.client == Actions.HOME:
@@ -87,7 +104,25 @@ class TimesheetUI(Gtk.Application):
             self.timesheet.client = Actions.NEUBLOC
             self.timesheet.actions = Actions.get(Actions.NEUBLOC)
 
+    def on_icon_activated(self, data=None):
+        self._toggle_visibility()
+
+    def on_icon_popup(self, data, arg1, arg2):
+        self._quit()
+
+
     ### private
+
+    def _toggle_visibility(self):
+        if self.window.get_visible():
+            self.window.hide_on_delete()
+        else:
+            self.window.show_all()
+
+    def _quit(self):
+        self.window.hide()
+        Gtk.main_quit()
+        signal.alarm(signal.SIGINT)
 
     def _reload(self):
         if DEBUG:
@@ -135,10 +170,12 @@ class TimesheetUI(Gtk.Application):
         delta = self._timedelta_to_string(delta)
 
         self.today_hours.set_text("""
-            Today hours:
-            Passed: %(passed)s
-            Remaining: %(remaining)s
-            """ % {'passed': delta, 'remaining': rdelta}
+Today hours:
+Passed: 
+%(passed)s
+Remaining: 
+%(remaining)s
+""" % {'passed': delta, 'remaining': rdelta}
         )
 
     def _today_hours_thread(self):
@@ -165,14 +202,12 @@ class TimesheetUI(Gtk.Application):
 
         self.hourlist.set_text(hlist_str) 
 
-
 class TimesheetDaylist(object):
     def __init__(self, container):
         self.container = container
 
 class TimesheetSignals():
     pass
-
 
 if __name__ == "__main__":
     app = TimesheetUI()
@@ -182,9 +217,7 @@ if __name__ == "__main__":
 
     GLib.threads_init()
     Gdk.threads_enter()
-
     Gtk.main()
-
     Gdk.threads_leave()
 
 

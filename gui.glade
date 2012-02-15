@@ -3,12 +3,14 @@
   <!-- interface-requires gtk+ 3.0 -->
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
+    <property name="border_width">5</property>
     <property name="title" translatable="yes">KartaPracy</property>
     <property name="window_position">center</property>
     <property name="default_width">400</property>
     <property name="default_height">200</property>
     <property name="opacity">0.5</property>
-    <signal name="destroy" handler="on_quit" swapped="no"/>
+    <signal name="destroy-event" handler="on_quit" swapped="no"/>
+    <signal name="delete-event" handler="on_quit" swapped="no"/>
     <child>
       <object class="GtkHBox" id="box1">
         <property name="visible">True</property>
@@ -24,6 +26,10 @@
               <object class="GtkLabel" id="hourlist">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">20</property>
+                <property name="margin_right">20</property>
+                <property name="margin_top">20</property>
+                <property name="margin_bottom">20</property>
                 <property name="label" translatable="yes">label</property>
               </object>
               <packing>
@@ -43,6 +49,7 @@
           <object class="GtkVBox" id="box2">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="spacing">5</property>
             <child>
               <object class="GtkHBox" id="box5">
                 <property name="height_request">30</property>
@@ -93,27 +100,44 @@
               <object class="GtkHBox" id="box6">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="homogeneous">True</property>
+                <property name="halign">start</property>
+                <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="hours">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="has_focus">True</property>
+                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">all</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparator" id="separator1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkLabel" id="today">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">today</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
+                    <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">2</property>
                   </packing>
@@ -132,15 +156,23 @@
                 <property name="homogeneous">True</property>
                 <child>
                   <object class="GtkButton" id="start">
-                    <property name="label" translatable="yes">start</property>
                     <property name="use_action_appearance">False</property>
                     <property name="height_request">60</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_action_appearance">False</property>
-                    <property name="use_underline">True</property>
                     <signal name="clicked" handler="on_start" swapped="no"/>
+                    <child>
+                      <object class="GtkLabel" id="label2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">start</property>
+                        <attributes>
+                          <attribute name="foreground" value="#33af95ac3c98"/>
+                        </attributes>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -150,14 +182,22 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="stop">
-                    <property name="label" translatable="yes">stop</property>
                     <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_action_appearance">False</property>
-                    <property name="use_underline">True</property>
                     <signal name="clicked" handler="on_stop" swapped="no"/>
+                    <child>
+                      <object class="GtkLabel" id="label1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">stop</property>
+                        <attributes>
+                          <attribute name="foreground" value="#ffff587b587b"/>
+                        </attributes>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
