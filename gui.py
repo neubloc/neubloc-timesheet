@@ -13,6 +13,11 @@ from gi.repository import Gtk, Gio, Gdk, GLib
 
 DEBUG = bool(os.getenv('DEBUG'))
 
+COLORS = {
+    'green': "#33af95ac3c98",
+    'red': "#ffff587b587b"
+}
+
 import time
 from datetime import date, datetime, timedelta
 from datetime import time as time2 
@@ -50,10 +55,6 @@ class TimesheetUI(Gtk.Application):
         self.statusIcon.connect("activate", self.on_icon_activated)
         self.statusIcon.connect("popup-menu", self.on_icon_popup)
 
-        
-        self.window = builder.get_object("window")
-        self.window.show_all()
-
         # objects
         self.hourlist = builder.get_object("hourlist")
         self.hours = builder.get_object("hours")
@@ -65,6 +66,9 @@ class TimesheetUI(Gtk.Application):
         self.stop= builder.get_object("stop")
         #self.start.set_sensitive(False)
 
+        self.model = builder.get_object("hourlist_store")
+        self.list = builder.get_object("hourlist_view")
+
         self.timesheet = Timesheet()       
         if self.timesheet.client == Actions.HOME:
             self.toggle_home.set_active(True)
@@ -72,6 +76,9 @@ class TimesheetUI(Gtk.Application):
             self.toggle_neubloc.set_active(True)
 
         self._reload()
+
+        self.window = builder.get_object("window")
+        self.window.show_all()
 
     def on_start(self, action):
         Thread(target=self._on_start).start()
@@ -122,12 +129,12 @@ class TimesheetUI(Gtk.Application):
     def _quit(self):
         self.window.hide()
         Gtk.main_quit()
-        signal.alarm(signal.SIGINT)
+        signal.alarm(1)
 
     def _reload(self):
         if DEBUG:
             hlist = [
-             (datetime(1,1,1,19, 00, 11).time(), u'DK (Start Dom)'), 
+             (datetime(1,1,1,19, 00, 11).time(), u'OS (Start Dom)'), 
              (datetime(1,1,1,10, 46, 11).time(), u'DK (Koniec Dom)'), 
              (datetime(1,1,1,8, 34, 58).time(), u'DS (Start Dom)')
             ]
@@ -169,12 +176,12 @@ class TimesheetUI(Gtk.Application):
         # time passed
         delta = self._timedelta_to_string(delta)
 
-        self.today_hours.set_text("""
-Today hours:
+        self.today_hours.set_markup("""\
 Passed: 
-%(passed)s
+<b>%(passed)s</b>
+
 Remaining: 
-%(remaining)s
+<b>%(remaining)s</b>
 """ % {'passed': delta, 'remaining': rdelta}
         )
 
@@ -191,16 +198,18 @@ Remaining:
 
     # month hours bilans
     def _month_hours(self, hlist):
-        self.hours.set_text("Month hours:\n%s" % self.timesheet.hours() ) 
+        hours = self.timesheet.hours()
+        color = COLORS['red'] if hours[0] == '-' else COLORS['green']
+        self.hours.set_markup("<span color='%s'>%s</span>" % (color, hours[1:]) ) 
 
     # formatting for list
     def _hourlists(self, hlist):
-        hlist = ["%s / %s\n" % (h[0],h[1]) for h in hlist]
-        hlist_str = "\n".join(h1+h2 for h1,h2 in zip(hlist[::2], hlist[1::2]))
-        if len(hlist) % 2 == 1:
-            hlist_str += hlist[-1]
+        for h in hlist:
+            time = str(h[0])
+            type = h[1][:2]
+            color = COLORS['red'] if type[1] == "K" else COLORS['green']
 
-        self.hourlist.set_text(hlist_str) 
+            self.model.append([time, Actions.ext[type], color])
 
 class TimesheetDaylist(object):
     def __init__(self, container):
