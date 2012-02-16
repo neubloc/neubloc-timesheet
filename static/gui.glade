@@ -22,6 +22,7 @@
     <property name="opacity">0.5</property>
     <property name="startup_id">Neubloc Timesheet</property>
     <signal name="destroy-event" handler="on_quit" swapped="no"/>
+    <signal name="window-state-event" handler="on_window_state" swapped="no"/>
     <signal name="delete-event" handler="on_quit" swapped="no"/>
     <child>
       <object class="GtkPaned" id="paned1">

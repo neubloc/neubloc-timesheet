@@ -3,40 +3,31 @@
 import vimpdb
 import os, sys
 import signal
-import pdb
-from threading import Thread
-
-## Gtk 2
-#import Gtk
-## Gtk 3
-from gi.repository import Gtk, Gio, Gdk, GLib
-
-DEBUG = bool(os.getenv('DEBUG'))
-
-COLORS = {
-    'green': "#33af95ac3c98",
-    'red': "#ffff587b587b"
-}
-
 import time
+from threading import Thread
 from datetime import date, datetime, timedelta
 from datetime import time as time2 
 
-from timesheet import *
+from gi.repository import Gtk, Gio, Gdk, GLib
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
+
+from lib.timesheet import *
+from lib.config import *
+
+DEBUG = bool(os.getenv('DEBUG'))
+COLORS = { 'green': "#33af95ac3c98", 'red': "#ffff587b587b" }
+
         
 class TimesheetUI(Gtk.Application):
-
     hlist = []
 
     def __init__(self):
         Gtk.Application.__init__(self, application_id="apps.test.helloworld", flags=Gio.ApplicationFlags.FLAGS_NONE)
-        #self.connect("activate", self.on_activate)
         self.on_activate()
 
-        #Thread(target=self.count, args=(maximum,)).start()
+        # threads
         self.today_hours_thr = Thread(target=self._today_hours_thread).start()
-
-        #vimpdb.set_trace()
 
     ###  signal handlers
     def on_quit(self, widget, data=None):
@@ -45,15 +36,15 @@ class TimesheetUI(Gtk.Application):
      
     def on_activate(self, data=None):
         builder = Gtk.Builder()
-        builder.add_from_file("gui.glade") 
+        builder.add_from_file("static/gui.glade") 
         builder.connect_signals(self)       
 
         # status icon
-        self.statusIcon = Gtk.StatusIcon()
-        self.statusIcon.set_from_file("%s" % 'icon.png')
-        self.statusIcon.set_visible(True)
-        self.statusIcon.connect("activate", self.on_icon_activated)
-        self.statusIcon.connect("popup-menu", self.on_icon_popup)
+        self.status_icon = Gtk.StatusIcon()
+        self.status_icon.set_from_file("%s" % 'static/icon.png')
+        self.status_icon.set_visible(True)
+        self.status_icon.connect("activate", self.on_icon_activated)
+        self.status_icon.connect("popup-menu", self.on_icon_popup)
 
         # objects
         self.hourlist = builder.get_object("hourlist")
@@ -69,7 +60,8 @@ class TimesheetUI(Gtk.Application):
         self.model = builder.get_object("hourlist_store")
         self.list = builder.get_object("hourlist_view")
 
-        self.timesheet = Timesheet()       
+        self.config = Config()
+        self.timesheet = Timesheet(self.config.get_user(), self.config.get_client())       
         if self.timesheet.client == Actions.HOME:
             self.toggle_home.set_active(True)
         else:
@@ -78,7 +70,8 @@ class TimesheetUI(Gtk.Application):
         self._reload()
 
         self.window = builder.get_object("window")
-        self.window.show_all()
+        if self.config.get_minimized() == False:
+            self.window.show_all()
 
     def on_start(self, action):
         Thread(target=self._on_start).start()
@@ -104,6 +97,8 @@ class TimesheetUI(Gtk.Application):
             self.timesheet.client = Actions.HOME
             self.timesheet.actions = Actions.get(Actions.HOME)
 
+            self.config.set_client('home')
+
         if(button_name == 'client_neubloc'):
             v  = self.toggle_neubloc.get_active()
             self.toggle_home.set_active( (v+1)%2 )
@@ -111,20 +106,28 @@ class TimesheetUI(Gtk.Application):
             self.timesheet.client = Actions.NEUBLOC
             self.timesheet.actions = Actions.get(Actions.NEUBLOC)
 
+        self.config.set_client(self.timesheet.client)
+
     def on_icon_activated(self, data=None):
         self._toggle_visibility()
 
     def on_icon_popup(self, data, arg1, arg2):
         self._quit()
 
+    def on_window_state(self, window, event):
+        #if event.new_window_state == Gdk.WindowState.ICONIFIED:
+        #    self._toggle_visibility()
+        pass
 
     ### private
-
     def _toggle_visibility(self):
+
+        self.config.set_minimized(self.window.get_visible())
         if self.window.get_visible():
-            self.window.hide_on_delete()
+            self.window.hide() #_on_delete()
         else:
             self.window.show_all()
+
 
     def _quit(self):
         self.window.hide()
@@ -134,9 +137,9 @@ class TimesheetUI(Gtk.Application):
     def _reload(self):
         if DEBUG:
             hlist = [
-             (datetime(1,1,1,19, 00, 11).time(), u'OS (Start Dom)'), 
-             (datetime(1,1,1,10, 46, 11).time(), u'DK (Koniec Dom)'), 
-             (datetime(1,1,1,8, 34, 58).time(), u'DS (Start Dom)')
+             (datetime(1,1,1,19, 00, 11).time(), 'OS (Start Dom)'), 
+             (datetime(1,1,1,10, 46, 11).time(), 'DK (Koniec Dom)'), 
+             (datetime(1,1,1,8, 34, 58).time(), 'DS (Start Dom)')
             ]
         else:
             hlist  = self.timesheet.list(datetime.now()) # - timedelta(days=2))
@@ -148,7 +151,7 @@ class TimesheetUI(Gtk.Application):
         self._month_hours(hlist)
         self._hourlists(hlist)
 
-    # coun today hourst
+    # coun today hours
     def _today_hours(self, hlist=None):
         if hlist == None: hlist = self.hlist
 
@@ -176,14 +179,10 @@ class TimesheetUI(Gtk.Application):
         # time passed
         delta = self._timedelta_to_string(delta)
 
-        self.today_hours.set_markup("""\
-Passed: 
-<b>%(passed)s</b>
+        data = """Passed:\n<b>%(passed)s</b>\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': delta, 'remaining': rdelta}
 
-Remaining: 
-<b>%(remaining)s</b>
-""" % {'passed': delta, 'remaining': rdelta}
-        )
+        self.today_hours.set_markup(data)
+        self.status_icon.set_tooltip_markup(data)
 
     def _today_hours_thread(self):
         while True:
@@ -211,12 +210,6 @@ Remaining:
 
             self.model.append([time, Actions.ext[type], color])
 
-class TimesheetDaylist(object):
-    def __init__(self, container):
-        self.container = container
-
-class TimesheetSignals():
-    pass
 
 if __name__ == "__main__":
     app = TimesheetUI()

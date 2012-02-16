@@ -9,31 +9,9 @@ from datetime import time as time2
 from BeautifulSoup import BeautifulSoup  
 
 from password import *
+from actions import *
 
 DEBUG = bool(os.getenv('DEBUG'))
-
-class Actions(object):
-    HOME = 1
-    NEUBLOC = 2
-
-    ext = {
-        'OS': 'Start from Neubloc',
-        'OK': 'End from Neubloc',
-        'DS': 'Start from home',
-        'DK': 'End from home',
-    }
-
-    @staticmethod
-    def get(client):
-        if client == Actions.HOME:
-            return { 'start': 'Start dom', 
-                     'stop': 'Koniec dom' }       
-
-        elif client == Actions.NEUBLOC:
-            return { 'start': 'Start Neubloc', 
-                     'stop': 'Koniec Neubloc' } 
-        else:
-            raise "Client error"
 
 
 class Timesheet(object):
@@ -78,7 +56,7 @@ class Timesheet(object):
         self.browser.select_form(nr=0)
 
         if DEBUG:
-            print 'fake submit | action: %s (%s)' % ( action, self.actions[action] )
+            print("fake submit | action: %s (%s)" % (action, self.actions[action]))
             return
 
         self.browser.submit(name="action_val", label=self.actions[action])
@@ -122,5 +100,5 @@ class Timesheet(object):
 
 if __name__ == '__main__':
     kp = Timesheet()
-    print kp.list()
+    print(kp.list())
 
