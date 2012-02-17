@@ -43,13 +43,14 @@ class TimesheetUI(Gtk.Application):
         return True
      
     def on_activate(self, data=None):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
         builder = Gtk.Builder()
-        builder.add_from_file("static/gui.glade") 
+        builder.add_from_file("%s%s" % (current_dir, "/static/gui.glade")) 
         builder.connect_signals(self)       
 
         # status icon
         self.status_icon = Gtk.StatusIcon()
-        self.status_icon.set_from_file("%s" % 'static/icon.png')
+        self.status_icon.set_from_file("%s%s" % (current_dir, 'static/icon.png'))
         self.status_icon.set_visible(True)
         self.status_icon.connect("activate", self.on_icon_activated)
         self.status_icon.connect("popup-menu", self.on_icon_popup)
