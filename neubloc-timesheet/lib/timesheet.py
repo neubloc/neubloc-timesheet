@@ -73,7 +73,7 @@ class Timesheet(object):
         soup = BeautifulSoup(page)
         return soup.find('span', id='tdh_up_plus').text
 
-    # lista 
+    # hourlist 
     def list(self, date = datetime.now()):
         self.login()
 

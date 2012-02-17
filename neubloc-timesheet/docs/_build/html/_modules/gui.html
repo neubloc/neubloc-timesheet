@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gui &mdash; Neubloc Timesheet 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Neubloc Timesheet 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Neubloc Timesheet 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for gui</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python2</span>
+
+<span class="kn">import</span> <span class="nn">vimpdb</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">time</span> <span class="k">as</span> <span class="n">time2</span> 
+
+<span class="kn">from</span> <span class="nn">gi.repository</span> <span class="kn">import</span> <span class="n">Gtk</span><span class="p">,</span> <span class="n">Gio</span><span class="p">,</span> <span class="n">Gdk</span><span class="p">,</span> <span class="n">GLib</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;/lib&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">lib.timesheet</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">lib.config</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">DEBUG</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&#39;DEBUG&#39;</span><span class="p">))</span>
+<span class="n">COLORS</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;green&#39;</span><span class="p">:</span> <span class="s">&quot;#33af95ac3c98&quot;</span><span class="p">,</span> <span class="s">&#39;red&#39;</span><span class="p">:</span> <span class="s">&quot;#ffff587b587b&quot;</span> <span class="p">}</span>
+
+        
+<div class="viewcode-block" id="TimesheetUI"><a class="viewcode-back" href="../index.html#gui.TimesheetUI">[docs]</a><span class="k">class</span> <span class="nc">TimesheetUI</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Application</span><span class="p">):</span>
+    <span class="n">hlist</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">Gtk</span><span class="o">.</span><span class="n">Application</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">application_id</span><span class="o">=</span><span class="s">&quot;apps.test.helloworld&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">Gio</span><span class="o">.</span><span class="n">ApplicationFlags</span><span class="o">.</span><span class="n">FLAGS_NONE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_activate</span><span class="p">()</span>
+
+        <span class="c"># threads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">today_hours_thr</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_today_hours_thread</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c">###  signal handlers</span>
+<div class="viewcode-block" id="TimesheetUI.on_quit"><a class="viewcode-back" href="../index.html#gui.TimesheetUI.on_quit">[docs]</a>    <span class="k">def</span> <span class="nf">on_quit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widget</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_toggle_visibility</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">True</span>
+     </div>
+<div class="viewcode-block" id="TimesheetUI.on_activate"><a class="viewcode-back" href="../index.html#gui.TimesheetUI.on_activate">[docs]</a>    <span class="k">def</span> <span class="nf">on_activate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">builder</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Builder</span><span class="p">()</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">add_from_file</span><span class="p">(</span><span class="s">&quot;static/gui.glade&quot;</span><span class="p">)</span> 
+        <span class="n">builder</span><span class="o">.</span><span class="n">connect_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>       
+
+        <span class="c"># status icon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_icon</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">StatusIcon</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_icon</span><span class="o">.</span><span class="n">set_from_file</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="s">&#39;static/icon.png&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_icon</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_icon</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&quot;activate&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_icon_activated</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_icon</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&quot;popup-menu&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_icon_popup</span><span class="p">)</span>
+
+        <span class="c"># objects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hourlist</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;hourlist&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hours</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;hours&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">today_hours</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;today&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toggle_home</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;client_home&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toggle_neubloc</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;client_neubloc&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;start&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;stop&quot;</span><span class="p">)</span>
+        <span class="c">#self.start.set_sensitive(False)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;hourlist_store&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;hourlist_view&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span> <span class="o">=</span> <span class="n">Timesheet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_user</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_client</span><span class="p">())</span>       
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">client</span> <span class="o">==</span> <span class="n">Actions</span><span class="o">.</span><span class="n">HOME</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">toggle_home</span><span class="o">.</span><span class="n">set_active</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">toggle_neubloc</span><span class="o">.</span><span class="n">set_active</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reload</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&quot;window&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_minimized</span><span class="p">()</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="TimesheetUI.on_start"><a class="viewcode-back" href="../index.html#gui.TimesheetUI.on_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_start</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">_on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reload</span><span class="p">()</span>
+
+<div class="viewcode-block" id="TimesheetUI.on_stop"><a class="viewcode-back" href="../index.html#gui.TimesheetUI.on_stop">[docs]</a>    <span class="k">def</span> <span class="nf">on_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_stop</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">_on_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reload</span><span class="p">()</span>
+
+<div class="viewcode-block" id="TimesheetUI.on_toggle_client"><a class="viewcode-back" href="../index.html#gui.TimesheetUI.on_toggle_client">[docs]</a>    <span class="k">def</span> <span class="nf">on_toggle_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">button</span><span class="p">):</span>
+        <span class="n">button_name</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Buildable</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">button</span><span class="p">)</span> 
+
+        <span class="k">if</span><span class="p">(</span><span class="n">button_name</span> <span class="o">==</span> <span class="s">&#39;client_home&#39;</span><span class="p">):</span>
+            <span class="n">v</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">toggle_home</span><span class="o">.</span><span class="n">get_active</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">toggle_neubloc</span><span class="o">.</span><span class="n">set_active</span><span class="p">(</span> <span class="p">(</span><span class="n">v</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="mi">2</span> <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">Actions</span><span class="o">.</span><span class="n">HOME</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="n">Actions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">Actions</span><span class="o">.</span><span class="n">HOME</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_client</span><span class="p">(</span><span class="s">&#39;home&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">button_name</span> <span class="o">==</span> <span class="s">&#39;client_neubloc&#39;</span><span class="p">):</span>
+            <span class="n">v</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">toggle_neubloc</span><span class="o">.</span><span class="n">get_active</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">toggle_home</span><span class="o">.</span><span class="n">set_active</span><span class="p">(</span> <span class="p">(</span><span class="n">v</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="mi">2</span> <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">Actions</span><span class="o">.</span><span class="n">NEUBLOC</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="n">Actions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">Actions</span><span class="o">.</span><span class="n">NEUBLOC</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">client</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TimesheetUI.on_icon_activated"><a class="viewcode-back" href="../index.html#gui.TimesheetUI.on_icon_activated">[docs]</a>    <span class="k">def</span> <span class="nf">on_icon_activated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_toggle_visibility</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="TimesheetUI.on_icon_popup"><a class="viewcode-back" href="../index.html#gui.TimesheetUI.on_icon_popup">[docs]</a>    <span class="k">def</span> <span class="nf">on_icon_popup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quit</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="TimesheetUI.on_window_state"><a class="viewcode-back" href="../index.html#gui.TimesheetUI.on_window_state">[docs]</a>    <span class="k">def</span> <span class="nf">on_window_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="c">#if event.new_window_state == Gdk.WindowState.ICONIFIED:</span>
+        <span class="c">#    self._toggle_visibility()</span>
+        <span class="k">pass</span>
+
+    <span class="c">### private</span></div>
+    <span class="k">def</span> <span class="nf">_toggle_visibility</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_minimized</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">get_visible</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">get_visible</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span> <span class="c">#_on_delete()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">_quit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+        <span class="n">Gtk</span><span class="o">.</span><span class="n">main_quit</span><span class="p">()</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_reload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
+            <span class="n">hlist</span> <span class="o">=</span> <span class="p">[</span>
+             <span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">19</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="s">&#39;OS (Start Dom)&#39;</span><span class="p">),</span> 
+             <span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="mi">46</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="s">&#39;DK (Koniec Dom)&#39;</span><span class="p">),</span> 
+             <span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span> <span class="mi">34</span><span class="p">,</span> <span class="mi">58</span><span class="p">)</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="s">&#39;DS (Start Dom)&#39;</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hlist</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span> <span class="c"># - timedelta(days=2))</span>
+
+        <span class="n">hlist</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hlist</span> <span class="o">=</span> <span class="n">hlist</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_today_hours</span><span class="p">(</span><span class="n">hlist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_month_hours</span><span class="p">(</span><span class="n">hlist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hourlists</span><span class="p">(</span><span class="n">hlist</span><span class="p">)</span>
+
+    <span class="c"># coun today hours</span>
+    <span class="k">def</span> <span class="nf">_today_hours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hlist</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">hlist</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span> <span class="n">hlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlist</span>
+
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">h1</span><span class="p">,</span><span class="n">h2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">hlist</span><span class="p">[::</span><span class="mi">2</span><span class="p">],</span><span class="n">hlist</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">t1</span> <span class="o">=</span> <span class="n">h1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">minute</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">t1</span><span class="o">.</span><span class="n">second</span> <span class="o">&gt;=</span> <span class="mi">30</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">(),</span> <span class="n">t1</span><span class="p">)</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">minute</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="n">t1</span><span class="o">.</span><span class="n">second</span><span class="p">))</span>
+
+            <span class="n">t2</span> <span class="o">=</span> <span class="n">h2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">minute</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">t2</span><span class="o">.</span><span class="n">second</span> <span class="o">&gt;=</span> <span class="mi">30</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">t2</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">(),</span> <span class="n">t2</span><span class="p">)</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">minute</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="n">t2</span><span class="o">.</span><span class="n">second</span><span class="p">))</span>
+
+            <span class="n">delta</span> <span class="o">+=</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hlist</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">delta</span> <span class="o">+=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="n">hlist</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> 
+
+        <span class="c"># time remaining</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rdelta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timedelta_to_string</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="o">-</span> <span class="n">delta</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">:</span>
+            <span class="n">rdelta</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c"># time passed</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timedelta_to_string</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;Passed:</span><span class="se">\n</span><span class="s">&lt;b&gt;</span><span class="si">%(passed)s</span><span class="s">&lt;/b&gt;</span><span class="se">\n</span><span class="s">Remaining:</span><span class="se">\n</span><span class="s">&lt;b&gt;</span><span class="si">%(remaining)s</span><span class="s">&lt;/b&gt;&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;passed&#39;</span><span class="p">:</span> <span class="n">delta</span><span class="p">,</span> <span class="s">&#39;remaining&#39;</span><span class="p">:</span> <span class="n">rdelta</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">today_hours</span><span class="o">.</span><span class="n">set_markup</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_icon</span><span class="o">.</span><span class="n">set_tooltip_markup</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_today_hours_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_today_hours</span><span class="p">()</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_timedelta_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
+        <span class="n">delta_h</span> <span class="o">=</span> <span class="n">delta</span><span class="o">.</span><span class="n">seconds</span><span class="o">/</span><span class="mi">3600</span>
+        <span class="n">delta_m</span> <span class="o">=</span> <span class="n">delta</span><span class="o">.</span><span class="n">seconds</span><span class="o">/</span><span class="mi">60</span> <span class="o">-</span> <span class="n">delta_h</span><span class="o">*</span><span class="mi">60</span>
+        <span class="n">delta_s</span> <span class="o">=</span> <span class="n">delta</span><span class="o">.</span><span class="n">seconds</span>    <span class="o">-</span> <span class="n">delta_h</span><span class="o">*</span><span class="mi">3600</span> <span class="o">-</span> <span class="n">delta_m</span><span class="o">*</span><span class="mi">60</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%d</span><span class="s">:</span><span class="si">%.2d</span><span class="s">:</span><span class="si">%.2d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">delta_h</span><span class="p">,</span> <span class="n">delta_m</span><span class="p">,</span> <span class="n">delta_s</span><span class="p">)</span>        
+
+    <span class="c"># month hours bilans</span>
+    <span class="k">def</span> <span class="nf">_month_hours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hlist</span><span class="p">):</span>
+        <span class="n">hours</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timesheet</span><span class="o">.</span><span class="n">hours</span><span class="p">()</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">COLORS</span><span class="p">[</span><span class="s">&#39;red&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">hours</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;-&#39;</span> <span class="k">else</span> <span class="n">COLORS</span><span class="p">[</span><span class="s">&#39;green&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hours</span><span class="o">.</span><span class="n">set_markup</span><span class="p">(</span><span class="s">&quot;&lt;span color=&#39;</span><span class="si">%s</span><span class="s">&#39;&gt;</span><span class="si">%s</span><span class="s">&lt;/span&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">hours</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="p">)</span> 
+
+    <span class="c"># formatting for list</span>
+    <span class="k">def</span> <span class="nf">_hourlists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hlist</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hlist</span><span class="p">:</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="nb">type</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">COLORS</span><span class="p">[</span><span class="s">&#39;red&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="nb">type</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;K&quot;</span> <span class="k">else</span> <span class="n">COLORS</span><span class="p">[</span><span class="s">&#39;green&#39;</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">time</span><span class="p">,</span> <span class="n">Actions</span><span class="o">.</span><span class="n">ext</span><span class="p">[</span><span class="nb">type</span><span class="p">],</span> <span class="n">color</span><span class="p">])</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">TimesheetUI</span><span class="p">()</span>
+
+    <span class="c">#signal.signal(signal.SIGINT, app.on_quit)</span>
+    <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_DFL</span><span class="p">)</span>
+
+    <span class="n">GLib</span><span class="o">.</span><span class="n">threads_init</span><span class="p">()</span>
+    <span class="n">Gdk</span><span class="o">.</span><span class="n">threads_enter</span><span class="p">()</span>
+    <span class="n">Gtk</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+    <span class="n">Gdk</span><span class="o">.</span><span class="n">threads_leave</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Neubloc Timesheet 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Marcin Rim.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

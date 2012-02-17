@@ -9,10 +9,9 @@ Welcome to Neubloc Timesheet's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 4
 
-   password
-
+.. automodule:: lib
 
 
 Indices and tables

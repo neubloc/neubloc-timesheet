@@ -1,2 +1,0 @@
-mechanize==0.2.5
-keyring==0.7.1

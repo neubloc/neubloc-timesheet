@@ -2,3 +2,7 @@
 docs/_build/
 docs/_static/
 docs/_templates/
+
+neubloc_timesheet.egg-info
+build
+dist
