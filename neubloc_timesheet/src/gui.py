@@ -2,8 +2,8 @@
 
 import vimpdb
 import os, sys
-import signal
 import time
+import signal
 from threading import Thread
 from datetime import date, datetime, timedelta
 from datetime import time as time2 
@@ -30,6 +30,12 @@ class TimesheetUI(Gtk.Application):
 
         # threads
         self.today_hours_thr = Thread(target=self._today_hours_thread).start()
+
+    def run(self):
+        GLib.threads_init()
+        Gdk.threads_enter()
+        Gtk.main()
+        Gdk.threads_leave()
 
     ###  signal handlers
     def on_quit(self, widget, data=None):
@@ -213,16 +219,6 @@ class TimesheetUI(Gtk.Application):
             self.model.append([time, Actions.ext[type], color])
 
 
-if __name__ == "__main__":
-    app = TimesheetUI()
-
-    #signal.signal(signal.SIGINT, app.on_quit)
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    GLib.threads_init()
-    Gdk.threads_enter()
-    Gtk.main()
-    Gdk.threads_leave()
 
 
 

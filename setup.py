@@ -1,34 +1,49 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+import os
+from setuptools import setup, find_packages
+
+
+def read(filename):
+    return open(os.path.join(os.path.dirname(__file__), filename)).read()
+
+NAME='neubloc-timesheet'
 
 setup(
-    name='neubloc-timesheet',
-    version='0.1',
+    name=NAME,
+    version=read('VERSION').replace("\n",''),
     description='Control neubloc timesheet from gtk3 app',
     author='Linden Lab',
     author_email='mrim@neubloc.net',
-    packages=['neubloc-timesheet'],
-
-    long_description="""\
-    eventlet is a coroutines-based network library for python ...
-    """,
+    packages=find_packages(), #['src', 'tests'],
+    include_package_data=True,
+    long_description=read('README'),
     classifiers=[
-      "License :: OSI Approved :: GNU General Public License (GPL)",
-      "Programming Language :: Python",
-      "Development Status :: Beta",
-      "Intended Audience :: Developers",
-      "Topic :: Internet",
+        "Development Status :: 3 - Alpha",
+        "Topic :: Utilities",
+        "License :: OSI Approved :: BSD License",
     ],
     keywords='networking internet neubloc',
-    license='GPL',
+    license='BSD',
     install_requires=[
-    'setuptools',
-    'mechanize',
-    'PyGObject',
-    'vimpdb',
-    'keyring',
-    'gconf',
-    'sphinx'
+        'setuptools',
+        'mechanize',
+        #'PyGObject',
+        #'gconf',
+        'vimpdb',
+        'keyring',
+        #'sphinx'
     ],
+    zip_safe = False,
+    entry_points = {
+        ## self run egg file
+        #'setuptools.installation': [
+        #    'eggsecutable = timesheet.run',
+        #]
+        'console_scripts': [
+           # modify script_name with the name you want use from shell
+           # $ script_name [params]
+           'neubloc_timesheet = neubloc_timesheet.src.timesheet:run',
+        ],
+    }
 )
