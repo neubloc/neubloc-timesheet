@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-import vimpdb
+import pdb
 import os, sys
 import time
 import signal
@@ -50,7 +50,9 @@ class TimesheetUI(Gtk.Application):
 
         # status icon
         self.status_icon = Gtk.StatusIcon()
-        self.status_icon.set_from_file("%s%s" % (current_dir, 'static/icon.png'))
+        self.status_icon.set_from_file(os.path.join(current_dir, 'static/icon.png'))
+        if DEBUG:
+            self.status_icon.set_from_file(os.path.join(current_dir, 'static/icon_debug.png'))
         self.status_icon.set_visible(True)
         self.status_icon.connect("activate", self.on_icon_activated)
         self.status_icon.connect("popup-menu", self.on_icon_popup)
@@ -66,8 +68,11 @@ class TimesheetUI(Gtk.Application):
         self.stop= builder.get_object("stop")
         #self.start.set_sensitive(False)
 
-        self.model = builder.get_object("hourlist_store")
-        self.list = builder.get_object("hourlist_view")
+        self.hours_model = builder.get_object("hourlist_store")
+        self.hours_list = builder.get_object("hourlist_view")
+
+        self.days_model = builder.get_object("days_store")
+        self.days_list = builder.get_object("days_view")
 
         self.config = Config()
         self.timesheet = Timesheet(self.config.get_user(), self.config.get_client())       
@@ -151,14 +156,15 @@ class TimesheetUI(Gtk.Application):
              (datetime(1,1,1,8, 34, 58).time(), 'DS (Start Dom)')
             ]
         else:
-            hlist  = self.timesheet.list(datetime.now()) # - timedelta(days=2))
+            hlist  = self.timesheet.hourlist(datetime.now()) # - timedelta(days=2))
 
         hlist.reverse()
         self.hlist = hlist
 
         self._today_hours(hlist)
         self._month_hours(hlist)
-        self._hourlists(hlist)
+        self._hourlist(hlist)
+        self._daylist()
 
     # coun today hours
     def _today_hours(self, hlist=None):
@@ -211,13 +217,23 @@ class TimesheetUI(Gtk.Application):
         self.hours.set_markup("<span color='%s'>%s</span>" % (color, hours[1:]) ) 
 
     # formatting for list
-    def _hourlists(self, hlist):
-        for h in hlist:
-            time = str(h[0])
-            type = h[1][:2]
+    def _hourlist(self, hlist):
+        self.hours_model.clear()
+
+        for (time, type) in hlist:
+            type = type[:2]
             color = COLORS['red'] if type[1] == "K" else COLORS['green']
 
-            self.model.append([time, Actions.ext[type], color])
+            self.hours_model.append([str(time), Actions.ext[type], color])
+
+
+    def _daylist(self):
+        self.days_model.clear()
+
+        daylist = self.timesheet.daylist()
+
+        for (nr, name, time) in daylist:
+            self.days_model.append([nr, name, time])
 
 
 

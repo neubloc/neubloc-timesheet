@@ -27,32 +27,29 @@ class Timesheet(object):
         self.user = user
 
         self.actions = Actions.get(client)
-        self.login()
+        self._login()
 
-    def reload(self):
+    def _reload(self):
         self.browser = mechanize.Browser()
 
-    def open(self, page='karta.php'):
+    def _open(self, page='karta.php'):
         self.browser.open( mechanize.urljoin(self.url, page) )
         self.browser._factory.is_html = True
 
-
-    # login
-    def login(self):
-        self.reload()
-        self.open()
+    def _login(self):
+        self._reload()
+        self._open()
         self.browser.select_form(nr=0)
 
         password = Password.get(self.user)
 
         self.browser["name"] = self.user
         self.browser["pass"] = password 
-        self.browser.submit()
+        return self.browser.submit()
 
-    # karta 
-    def do(self, action):
-        self.login()
-        self.open()
+    def _do(self, action):
+        self._login()
+        self._open()
         self.browser.select_form(nr=0)
 
         if DEBUG:
@@ -61,24 +58,24 @@ class Timesheet(object):
 
         self.browser.submit(name="action_val", label=self.actions[action])
 
+    ### public 
     def start(self):
-        self.do("start")
+        self._do("start")
 
     def stop(self):
-        self.do("stop")
+        self._do("stop")
 
     def hours(self):
-        self.login()
+        self._login()
         page = self.browser.response().get_data()
         soup = BeautifulSoup(page)
         return soup.find('span', id='tdh_up_plus').text
 
-    # hourlist 
-    def list(self, date = datetime.now()):
-        self.login()
+    def hourlist(self, date = datetime.now()):
+        self._login()
 
         timestamp = time.mktime(date.timetuple())
-        self.open("action_popup.php?date=%s" % int(timestamp))
+        self._open("action_popup.php?date=%s" % int(timestamp))
         page = self.browser.response().get_data()
 
         soup = BeautifulSoup(page)
@@ -97,8 +94,28 @@ class Timesheet(object):
                 
         return entries
 
+    def daylist(self, date = datetime.now()):
+        page = self._login()
 
-if __name__ == '__main__':
-    kp = Timesheet()
-    print(kp.list())
+        #timestamp = time.mktime(date.timetuple())
+        #self._open("action_popup.php?date=%s" % int(timestamp))
+        #page = self.browser.response().get_data()
+
+        soup = BeautifulSoup(page)
+        rows = soup.find('table', id='userlist').tbody.findAll('tr')[2:-5]
+
+        entries = []
+
+        for row in rows:
+            soup = BeautifulSoup(str(row))
+            columns = soup.findAll('td', id=None)
+            
+            if len(columns) > 2:
+                entry_nr = int(columns[0].b.text)
+                entry_name = columns[1].text
+                entry_time = columns[6].span.text
+                entries.append((entry_nr, entry_name, entry_time))
+                
+        return entries
+
 

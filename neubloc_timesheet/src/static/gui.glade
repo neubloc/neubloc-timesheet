@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkListStore" id="days_store">
+    <columns>
+      <!-- column-name nr -->
+      <column type="gint"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name time -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkListStore" id="hourlist_store">
     <columns>
       <!-- column-name time -->
@@ -25,232 +35,297 @@
     <signal name="window-state-event" handler="on_window_state" swapped="no"/>
     <signal name="delete-event" handler="on_quit" swapped="no"/>
     <child>
-      <object class="GtkPaned" id="paned1">
+      <object class="GtkBox" id="box1">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
         <child>
-          <object class="GtkTreeView" id="hourlist_view">
-            <property name="width_request">270</property>
-            <property name="height_request">250</property>
+          <object class="GtkPaned" id="paned1">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="model">hourlist_store</property>
-            <property name="headers_clickable">False</property>
+            <child>
+              <object class="GtkTreeView" id="hourlist_view">
+                <property name="width_request">270</property>
+                <property name="height_request">250</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="model">hourlist_store</property>
+                <property name="headers_clickable">False</property>
+                <property name="reorderable">True</property>
+                <property name="enable_search">False</property>
+                <property name="search_column">0</property>
+                <property name="enable_grid_lines">horizontal</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection" id="treeview-selection"/>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn" id="hourlist_time_column">
+                    <property name="title" translatable="yes">time</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="time_text"/>
+                      <attributes>
+                        <attribute name="foreground">2</attribute>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkTreeViewColumn" id="hourlist_type_column">
+                    <property name="title" translatable="yes">type</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="type_text"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">False</property>
+                <property name="shrink">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="grid1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">20</property>
+                <property name="margin_right">20</property>
+                <property name="margin_top">20</property>
+                <property name="margin_bottom">20</property>
+                <property name="orientation">vertical</property>
+                <property name="row_spacing">10</property>
+                <property name="column_homogeneous">True</property>
+                <child>
+                  <object class="GtkToggleButton" id="client_home">
+                    <property name="label" translatable="yes">Dom</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="height_request">30</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="yalign">0.49000000953674316</property>
+                    <signal name="toggled" handler="on_toggle_client" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToggleButton" id="client_neubloc">
+                    <property name="label" translatable="yes">Neubloc</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
+                    <signal name="toggled" handler="on_toggle_client" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="today_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="vexpand">True</property>
+                    <property name="xalign">0</property>
+                    <property name="label" translatable="yes">Today:</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="hours_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="vexpand">True</property>
+                    <property name="xalign">0</property>
+                    <property name="label" translatable="yes">Month:</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="today">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="vexpand">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
+                    <property name="label" translatable="yes">today</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="hours">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="vexpand">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
+                    <property name="label" translatable="yes">all</property>
+                    <property name="use_markup">True</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="start">
+                    <property name="use_action_appearance">False</property>
+                    <property name="height_request">60</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
+                    <signal name="clicked" handler="on_start" swapped="no"/>
+                    <child>
+                      <object class="GtkLabel" id="label2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">start</property>
+                        <attributes>
+                          <attribute name="foreground" value="#33af95ac3c98"/>
+                        </attributes>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="stop">
+                    <property name="use_action_appearance">False</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="use_action_appearance">False</property>
+                    <signal name="clicked" handler="on_stop" swapped="no"/>
+                    <child>
+                      <object class="GtkLabel" id="label1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">stop</property>
+                        <attributes>
+                          <attribute name="foreground" value="#ffff587b587b"/>
+                        </attributes>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">3</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">True</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTreeView" id="days_view">
+            <property name="can_focus">True</property>
+            <property name="model">days_store</property>
             <property name="reorderable">True</property>
             <property name="enable_search">False</property>
             <property name="enable_grid_lines">horizontal</property>
             <child internal-child="selection">
-              <object class="GtkTreeSelection" id="treeview-selection1">
-                <property name="mode">none</property>
-              </object>
+              <object class="GtkTreeSelection" id="treeview-selection1"/>
             </child>
             <child>
-              <object class="GtkTreeViewColumn" id="hourlist_time_column">
-                <property name="title" translatable="yes">time</property>
+              <object class="GtkTreeViewColumn" id="daynr_column">
+                <property name="title" translatable="yes">nr</property>
                 <child>
-                  <object class="GtkCellRendererText" id="time_text"/>
+                  <object class="GtkCellRendererText" id="daynr_text"/>
                   <attributes>
-                    <attribute name="foreground">2</attribute>
                     <attribute name="text">0</attribute>
                   </attributes>
                 </child>
               </object>
             </child>
             <child>
-              <object class="GtkTreeViewColumn" id="hourlist_type_column">
-                <property name="title" translatable="yes">type</property>
+              <object class="GtkTreeViewColumn" id="dayname_column">
+                <property name="title" translatable="yes">name</property>
                 <child>
-                  <object class="GtkCellRendererText" id="type_text"/>
+                  <object class="GtkCellRendererText" id="dayname_text"/>
                   <attributes>
                     <attribute name="text">1</attribute>
                   </attributes>
                 </child>
               </object>
             </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="daytime_column">
+                <property name="title" translatable="yes">time</property>
+                <child>
+                  <object class="GtkCellRendererText" id="daytime_text"/>
+                  <attributes>
+                    <attribute name="text">2</attribute>
+                  </attributes>
+                </child>
+              </object>
+            </child>
           </object>
           <packing>
-            <property name="resize">False</property>
-            <property name="shrink">True</property>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
-          <object class="GtkGrid" id="grid1">
+          <object class="GtkStatusbar" id="statusbar1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_left">20</property>
-            <property name="margin_right">20</property>
-            <property name="margin_top">20</property>
-            <property name="margin_bottom">20</property>
             <property name="orientation">vertical</property>
-            <property name="row_spacing">10</property>
-            <property name="column_homogeneous">True</property>
-            <child>
-              <object class="GtkToggleButton" id="client_home">
-                <property name="label" translatable="yes">Dom</property>
-                <property name="use_action_appearance">False</property>
-                <property name="height_request">30</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
-                <property name="yalign">0.49000000953674316</property>
-                <signal name="toggled" handler="on_toggle_client" swapped="no"/>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToggleButton" id="client_neubloc">
-                <property name="label" translatable="yes">Neubloc</property>
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
-                <signal name="toggled" handler="on_toggle_client" swapped="no"/>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="today_label">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="halign">start</property>
-                <property name="vexpand">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Today:</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="hours_label">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="vexpand">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Month:</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">1</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="today">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="halign">start</property>
-                <property name="vexpand">True</property>
-                <property name="xalign">0</property>
-                <property name="yalign">0</property>
-                <property name="label" translatable="yes">today</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">2</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="hours">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="vexpand">True</property>
-                <property name="xalign">0</property>
-                <property name="yalign">0</property>
-                <property name="label" translatable="yes">all</property>
-                <property name="use_markup">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">2</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="start">
-                <property name="use_action_appearance">False</property>
-                <property name="height_request">60</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
-                <signal name="clicked" handler="on_start" swapped="no"/>
-                <child>
-                  <object class="GtkLabel" id="label2">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">start</property>
-                    <attributes>
-                      <attribute name="foreground" value="#33af95ac3c98"/>
-                    </attributes>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">3</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="stop">
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
-                <signal name="clicked" handler="on_stop" swapped="no"/>
-                <child>
-                  <object class="GtkLabel" id="label1">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">stop</property>
-                    <attributes>
-                      <attribute name="foreground" value="#ffff587b587b"/>
-                    </attributes>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">3</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
+            <property name="spacing">2</property>
           </object>
           <packing>
-            <property name="resize">True</property>
-            <property name="shrink">True</property>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
