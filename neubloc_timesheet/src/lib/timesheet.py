@@ -113,8 +113,9 @@ class Timesheet(object):
             if len(columns) > 2:
                 entry_nr = int(columns[0].b.text)
                 entry_name = columns[1].text
+                entry_description = columns[4].span.text
                 entry_time = columns[6].span.text
-                entries.append((entry_nr, entry_name, entry_time))
+                entries.append((entry_nr, entry_name, entry_time, entry_description, 0))
                 
         return entries
 

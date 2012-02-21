@@ -73,6 +73,7 @@ class TimesheetUI(Gtk.Application):
 
         self.days_model = builder.get_object("days_store")
         self.days_list = builder.get_object("days_view")
+        self.days_selection = builder.get_object('days_selection')
 
         self.config = Config()
         self.timesheet = Timesheet(self.config.get_user(), self.config.get_client())       
@@ -92,13 +93,22 @@ class TimesheetUI(Gtk.Application):
             self.project_buttons.append(radio)
             radio.show()
 
-
         self._reload()
 
         self.window = builder.get_object("window")
         if self.config.get_minimized() == False:
             self._toggle_visibility()
 
+
+    def on_projecthours_set(self, data):
+        self.days_selection.selected_foreach(self._set_single_projecthours, [])
+
+    def _set_single_projecthours(self,model,path,iter,data=None):
+        print model.get_value(iter, 0),
+        print model.get_value(iter, 1),
+        print model.get_value(iter, 2),
+        print model.get_value(iter, 3),
+        print model.get_value(iter, 4)
 
 
     def on_start(self, action):
@@ -246,8 +256,8 @@ class TimesheetUI(Gtk.Application):
 
         daylist = self.timesheet.daylist()
 
-        for (nr, name, time) in daylist:
-            self.days_model.append([nr, name, time])
+        for (nr, name, time, description, timestamp) in daylist:
+            self.days_model.append([nr, name, time, description, str(timestamp)])
 
 
 
