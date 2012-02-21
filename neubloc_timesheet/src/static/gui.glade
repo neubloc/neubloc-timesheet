@@ -252,6 +252,15 @@
                     <property name="height">1</property>
                   </packing>
                 </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
               </object>
               <packing>
                 <property name="resize">True</property>
@@ -266,46 +275,140 @@
           </packing>
         </child>
         <child>
-          <object class="GtkTreeView" id="days_view">
+          <object class="GtkExpander" id="expander1">
+            <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="model">days_store</property>
-            <property name="reorderable">True</property>
-            <property name="enable_search">False</property>
-            <property name="enable_grid_lines">horizontal</property>
-            <child internal-child="selection">
-              <object class="GtkTreeSelection" id="treeview-selection1"/>
-            </child>
+            <property name="resize_toplevel">True</property>
             <child>
-              <object class="GtkTreeViewColumn" id="daynr_column">
-                <property name="title" translatable="yes">nr</property>
+              <object class="GtkBox" id="box2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkCellRendererText" id="daynr_text"/>
-                  <attributes>
-                    <attribute name="text">0</attribute>
-                  </attributes>
+                  <object class="GtkBox" id="box4">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="label3">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Set fulltime for chosen project  
+to all/selected days    </property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="project_choose_box">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button1">
+                        <property name="label" translatable="yes">set</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="use_action_appearance">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkTreeView" id="days_view">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="model">days_store</property>
+                    <property name="headers_clickable">False</property>
+                    <property name="reorderable">True</property>
+                    <property name="enable_search">False</property>
+                    <property name="search_column">0</property>
+                    <property name="enable_grid_lines">horizontal</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection" id="treeview-selection1"/>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="daynr_column">
+                        <property name="title" translatable="yes">nr</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="daynr_text"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="dayname_column">
+                        <property name="title" translatable="yes">name</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="dayname_text"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="daytime_column">
+                        <property name="title" translatable="yes">registered time</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="daytime_text"/>
+                          <attributes>
+                            <attribute name="text">2</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="dayproject_column">
+                        <property name="title" translatable="yes">project</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="dayproject_text"/>
+                          <attributes>
+                            <attribute name="text">2</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
               </object>
             </child>
-            <child>
-              <object class="GtkTreeViewColumn" id="dayname_column">
-                <property name="title" translatable="yes">name</property>
-                <child>
-                  <object class="GtkCellRendererText" id="dayname_text"/>
-                  <attributes>
-                    <attribute name="text">1</attribute>
-                  </attributes>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkTreeViewColumn" id="daytime_column">
-                <property name="title" translatable="yes">time</property>
-                <child>
-                  <object class="GtkCellRendererText" id="daytime_text"/>
-                  <attributes>
-                    <attribute name="text">2</attribute>
-                  </attributes>
-                </child>
+            <child type="label">
+              <object class="GtkLabel" id="daylist_expander_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Days list</property>
               </object>
             </child>
           </object>
@@ -325,7 +428,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>

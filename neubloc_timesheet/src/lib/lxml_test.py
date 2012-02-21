@@ -3,7 +3,7 @@ from lxml.html import parse, open_in_browser
 url = 'http://neubloc.omnis.pl'
 page = parse(url)
 
-page.make_links_absolute(url)
+#page.make_links_absolute(url)
 form = page.forms[0]
 form.inputs['name'].value = 'mrim'
 form.inputs['pass'].value = '#'

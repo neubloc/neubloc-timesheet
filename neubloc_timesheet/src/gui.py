@@ -81,11 +81,25 @@ class TimesheetUI(Gtk.Application):
         else:
             self.toggle_neubloc.set_active(True)
 
+        #project choose
+        self.project_choose_box = builder.get_object("project_choose_box")
+        self.project_buttons = []
+        for name, ids in eval(self.config.get_projects()).items():
+            group = self.project_buttons[0] if len(self.project_buttons) else None
+            radio = Gtk.RadioButton("%s" % name, group=group)
+
+            self.project_choose_box.pack_start(radio, True, True, 0)
+            self.project_buttons.append(radio)
+            radio.show()
+
+
         self._reload()
 
         self.window = builder.get_object("window")
         if self.config.get_minimized() == False:
-            self.window.show_all()
+            self._toggle_visibility()
+
+
 
     def on_start(self, action):
         Thread(target=self._on_start).start()
@@ -140,7 +154,7 @@ class TimesheetUI(Gtk.Application):
         if self.window.get_visible():
             self.window.hide() #_on_delete()
         else:
-            self.window.show_all()
+            self.window.show()
 
 
     def _quit(self):
