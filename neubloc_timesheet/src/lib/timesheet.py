@@ -115,6 +115,7 @@ class Timesheet(object):
                 entry_name = columns[1].text
                 entry_description = columns[4].span.text
                 entry_time = columns[6].span.text
+
                 entries.append((entry_nr, entry_name, entry_time, entry_description, 0))
                 
         return entries

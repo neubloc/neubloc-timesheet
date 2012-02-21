@@ -100,17 +100,6 @@ class TimesheetUI(Gtk.Application):
             self._toggle_visibility()
 
 
-    def on_projecthours_set(self, data):
-        self.days_selection.selected_foreach(self._set_single_projecthours, [])
-
-    def _set_single_projecthours(self,model,path,iter,data=None):
-        print model.get_value(iter, 0),
-        print model.get_value(iter, 1),
-        print model.get_value(iter, 2),
-        print model.get_value(iter, 3),
-        print model.get_value(iter, 4)
-
-
     def on_start(self, action):
         Thread(target=self._on_start).start()
 
@@ -124,6 +113,19 @@ class TimesheetUI(Gtk.Application):
     def _on_stop(self):
         self.timesheet.stop()
         self._reload()
+
+    def on_projecthours_set(self, data):
+        self.days_selection.selected_foreach(self._set_single_projecthours, [])
+
+    def _set_single_projecthours(self,model,path,iter,data=None):
+        id = model.get_value(iter, 0)
+        name = model.get_value(iter, 1)
+        time = model.get_value(iter, 2)
+        desc = model.get_value(iter, 3)
+        timestamp = model.get_value(iter, 4)
+
+        if desc == "Praca":
+            print "%s %s - %s" % (time, nr, time)
 
     def on_toggle_client(self, button):
         button_name = Gtk.Buildable.get_name(button) 
