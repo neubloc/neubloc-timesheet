@@ -3,8 +3,9 @@
 import os
 import mechanize
 import time
-from datetime import date, datetime
+from datetime import datetime
 from datetime import time as time2 
+import re
 
 from BeautifulSoup import BeautifulSoup  
 
@@ -12,7 +13,7 @@ from password import *
 from actions import *
 
 DEBUG = bool(os.getenv('DEBUG'))
-
+NR, NAME, TIME, DESCRIPTION, TIMESTAMP, PROJECTHOURS = range(6)
 
 class Timesheet(object):
     
@@ -21,6 +22,7 @@ class Timesheet(object):
     browser = None
     user = None
     actions = {}
+
 
     def __init__(self, user = 'mrim', client = Actions.HOME):
         self.client = client
@@ -97,10 +99,6 @@ class Timesheet(object):
     def daylist(self, date = datetime.now()):
         page = self._login()
 
-        #timestamp = time.mktime(date.timetuple())
-        #self._open("action_popup.php?date=%s" % int(timestamp))
-        #page = self.browser.response().get_data()
-
         soup = BeautifulSoup(page)
         rows = soup.find('table', id='userlist').tbody.findAll('tr')[2:-5]
 
@@ -116,8 +114,28 @@ class Timesheet(object):
                 entry_description = columns[4].span.text
                 entry_time = columns[6].span.text
 
-                entries.append((entry_nr, entry_name, entry_time, entry_description, 0))
+                timestamp = ''
+                try:
+                    r = re.compile('.*date\=(\d+)')
+                    timestamp = r.findall(columns[0]['onclick'])[0]
+                except KeyError: pass
+
+                # registered projecthours
+                process_projecthours = lambda c: "%s / %s" % (c.span['title'], c.span.text) if c.span.text else None 
+                projecthours = filter(None, [process_projecthours(c) for c in columns[12:]])
+                projecthours = "\n".join(projecthours)
+
+                entries.append((entry_nr, 
+                                entry_name, 
+                                entry_time,
+                                entry_description, 
+                                timestamp, 
+                                projecthours))
                 
         return entries
+
+    def set_projecthours(self, timestamp, project, hours, minutes):
+        print "(fake) Setting %s:%s on day %s / project: %s" % (hours, minutes, timestamp, project)
+
 
 

@@ -56,11 +56,12 @@ class Config(object):
         return self._set('user', val)
 
     def get_projects(self):
-        default = {'PJPJ': (44, 27), 
-                   'BZBZ': (50, 66)};
+        default = {'Peoplejar': (44, 27), 
+                   'Bizznesscard': (50, 66)};
         #projects['NBSA'] = {'company_id': 24, 'project_id': 79};
 
-        return self._get('projects', default)
+        projects = self._get('projects', default)
+        return eval(projects)
 
 
 

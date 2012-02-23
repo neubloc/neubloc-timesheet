@@ -6,7 +6,6 @@ import time
 import signal
 from threading import Thread
 from datetime import date, datetime, timedelta
-from datetime import time as time2 
 
 from gi.repository import Gtk, Gio, Gdk, GLib
 
@@ -19,13 +18,16 @@ DEBUG = bool(os.getenv('DEBUG'))
 COLORS = { 'green': "#33af95ac3c98", 'red': "#ffff587b587b" }
 
 class TimesheetUI(Gtk.Application):
+
     """
         Gtk3 app for Timesheet lib
     """
     hlist = []
 
     def __init__(self):
-        Gtk.Application.__init__(self, application_id="apps.test.helloworld", flags=Gio.ApplicationFlags.FLAGS_NONE)
+        Gtk.Application.__init__(self, 
+                application_id="apps.test.helloworld", 
+                flags=Gio.ApplicationFlags.FLAGS_NONE)
         self.on_activate()
 
         # threads
@@ -50,9 +52,13 @@ class TimesheetUI(Gtk.Application):
 
         # status icon
         self.status_icon = Gtk.StatusIcon()
-        self.status_icon.set_from_file(os.path.join(current_dir, 'static/icon.png'))
+        self.status_icon.set_from_file(
+                os.path.join(current_dir, 'static/icon.png'))
+
         if DEBUG:
-            self.status_icon.set_from_file(os.path.join(current_dir, 'static/icon_debug.png'))
+            self.status_icon.set_from_file(
+                    os.path.join(current_dir, 'static/icon_debug.png'))
+
         self.status_icon.set_visible(True)
         self.status_icon.connect("activate", self.on_icon_activated)
         self.status_icon.connect("popup-menu", self.on_icon_popup)
@@ -76,7 +82,9 @@ class TimesheetUI(Gtk.Application):
         self.days_selection = builder.get_object('days_selection')
 
         self.config = Config()
-        self.timesheet = Timesheet(self.config.get_user(), self.config.get_client())       
+        self.timesheet = Timesheet(self.config.get_user(), 
+                                   self.config.get_client())       
+
         if self.timesheet.client == Actions.HOME:
             self.toggle_home.set_active(True)
         else:
@@ -85,7 +93,7 @@ class TimesheetUI(Gtk.Application):
         #project choose
         self.project_choose_box = builder.get_object("project_choose_box")
         self.project_buttons = []
-        for name, ids in eval(self.config.get_projects()).items():
+        for name, ids in self.config.get_projects().items():
             group = self.project_buttons[0] if len(self.project_buttons) else None
             radio = Gtk.RadioButton("%s" % name, group=group)
 
@@ -115,17 +123,29 @@ class TimesheetUI(Gtk.Application):
         self._reload()
 
     def on_projecthours_set(self, data):
-        self.days_selection.selected_foreach(self._set_single_projecthours, [])
+        radio = [r for r in self.project_buttons[0].get_group() if r.get_active()][0] 
+        projectname = radio.get_label()
+        project = self.config.get_projects()[projectname]
 
-    def _set_single_projecthours(self,model,path,iter,data=None):
-        id = model.get_value(iter, 0)
-        name = model.get_value(iter, 1)
-        time = model.get_value(iter, 2)
-        desc = model.get_value(iter, 3)
-        timestamp = model.get_value(iter, 4)
+        self.days_selection.selected_foreach(self._set_single_projecthours, project)
+        self._daylist()
 
-        if desc == "Praca":
-            print "%s %s - %s" % (time, nr, time)
+    def _set_single_projecthours(self, model, path, iter, project=None):
+        daydata = [model.get_value(iter, i) for i in range(model.get_n_columns())]
+
+        hours, minutes = daydata[TIME].split(':')
+
+        if self._projecthours_day_ready(daydata):
+            self.timesheet.set_projecthours(daydata[TIMESTAMP], project, hours, minutes) 
+        else:
+            alert = Gtk.MessageDialog()
+            alert.set_markup("text")
+            alert.show_all()
+
+    def _projecthours_day_ready(self, daydata):
+        return daydata[DESCRIPTION] == "Praca" and \
+               daydata[TIMESTAMP] and \
+               not daydata[PROJECTHOURS]
 
     def on_toggle_client(self, button):
         button_name = Gtk.Buildable.get_name(button) 
@@ -182,7 +202,7 @@ class TimesheetUI(Gtk.Application):
              (datetime(1,1,1,8, 34, 58).time(), 'DS (Start Dom)')
             ]
         else:
-            hlist  = self.timesheet.hourlist(datetime.now()) # - timedelta(days=2))
+            hlist  = self.timesheet.hourlist(datetime.now())
 
         hlist.reverse()
         self.hlist = hlist
@@ -258,8 +278,13 @@ class TimesheetUI(Gtk.Application):
 
         daylist = self.timesheet.daylist()
 
-        for (nr, name, time, description, timestamp) in daylist:
-            self.days_model.append([nr, name, time, description, str(timestamp)])
+        for (nr, name, time, description, timestamp, projecthours) in daylist:
+            self.days_model.append([nr, 
+                                    name, 
+                                    time, 
+                                    description,
+                                    str(timestamp), 
+                                    projecthours])
 
 
 
