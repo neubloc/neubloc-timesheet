@@ -1,1 +1,6 @@
 Neubloc Timesheet controlling app
+
+Requirements:
+python2-gobject
+python2-gconf
+zenity

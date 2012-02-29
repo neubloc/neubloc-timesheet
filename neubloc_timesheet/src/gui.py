@@ -107,6 +107,8 @@ class TimesheetUI(Gtk.Application):
         if self.config.get_minimized() == False:
             self._toggle_visibility()
 
+        self.window.set_keep_above(True)
+
 
     def on_start(self, action):
         Thread(target=self._on_start).start()
@@ -122,12 +124,23 @@ class TimesheetUI(Gtk.Application):
         self.timesheet.stop()
         self._reload()
 
+    #def on_projecthours_set(self, data):
+    #    Thread(target=self._on_projecthours_set, args=(data,)).start()
+
     def on_projecthours_set(self, data):
         radio = [r for r in self.project_buttons[0].get_group() if r.get_active()][0] 
         projectname = radio.get_label()
         project = self.config.get_projects()[projectname]
 
+        self.projecthours_errors = []
+
         self.days_selection.selected_foreach(self._set_single_projecthours, project)
+
+        if self.projecthours_errors:
+            alert = Gtk.MessageDialog()
+            alert.set_markup("Cannot set project hours for days:\n\n%s" % "\n".join(self.projecthours_errors))
+            alert.show_all()
+
         self._daylist()
 
     def _set_single_projecthours(self, model, path, iter, project=None):
@@ -138,9 +151,7 @@ class TimesheetUI(Gtk.Application):
         if self._projecthours_day_ready(daydata):
             self.timesheet.set_projecthours(daydata[TIMESTAMP], project, hours, minutes) 
         else:
-            alert = Gtk.MessageDialog()
-            alert.set_markup("text")
-            alert.show_all()
+            self.projecthours_errors.append("%s/%s" %(daydata[NR], daydata[NAME]))
 
     def _projecthours_day_ready(self, daydata):
         return daydata[DESCRIPTION] == "Praca" and \
@@ -198,8 +209,8 @@ class TimesheetUI(Gtk.Application):
         if DEBUG:
             hlist = [
              (datetime(1,1,1,19, 00, 11).time(), 'OS (Start Dom)'), 
-             (datetime(1,1,1,10, 46, 11).time(), 'DK (Koniec Dom)'), 
-             (datetime(1,1,1,8, 34, 58).time(), 'DS (Start Dom)')
+             (datetime(1,1,1,16, 46, 11).time(), 'DK (Koniec Dom)'), 
+             (datetime(1,1,1,8,  34, 58).time(), 'DS (Start Dom)')
             ]
         else:
             hlist  = self.timesheet.hourlist(datetime.now())
@@ -212,7 +223,7 @@ class TimesheetUI(Gtk.Application):
         self._hourlist(hlist)
         self._daylist()
 
-    # coun today hours
+    # count today hours
     def _today_hours(self, hlist=None):
         if hlist == None: hlist = self.hlist
 
@@ -233,14 +244,21 @@ class TimesheetUI(Gtk.Application):
 
         # time remaining
         try:
-            rdelta = self._timedelta_to_string(timedelta(hours=8) - delta)
+            rdelta = timedelta(hours=8) - delta
+            if(rdelta < timedelta(hours=0)):
+                rdelta = delta - timedelta(hours=8)
+                rdelta_str = '<span fgcolor="%s">+ %s</span>' % (
+                        COLORS['green'], 
+                        self._timedelta_to_string(delta - timedelta(hours=8)))
+            else:
+                rdelta_str = self._timedelta_to_string(timedelta(hours=8) - delta)
         except OverflowError:
-            rdelta = timedelta(0)
+            rdelta_str = "0"
 
         # time passed
         delta = self._timedelta_to_string(delta)
 
-        data = """Passed:\n<b>%(passed)s</b>\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': delta, 'remaining': rdelta}
+        data = """Passed:\n<b>%(passed)s</b>\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': delta, 'remaining': rdelta_str}
 
         self.today_hours.set_markup(data)
         self.status_icon.set_tooltip_markup(data)
@@ -285,8 +303,5 @@ class TimesheetUI(Gtk.Application):
                                     description,
                                     str(timestamp), 
                                     projecthours])
-
-
-
 
 

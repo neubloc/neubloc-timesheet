@@ -32,9 +32,9 @@ setup(
         'mechanize',
         #'PyGObject',
         #'gconf',
-        'vimpdb',
-        'keyring',
+        #'pdb',
         #'sphinx'
+        'keyring',
     ],
     zip_safe = False,
     entry_points = {

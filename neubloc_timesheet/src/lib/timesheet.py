@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 import os
+import pdb
 import mechanize
 import time
 from datetime import datetime
@@ -135,6 +136,33 @@ class Timesheet(object):
         return entries
 
     def set_projecthours(self, timestamp, project, hours, minutes):
+        self._login()
+        self._open('task_popup.php?date=%s' % timestamp)
+        self.browser.select_form(nr=0)
+
+        self.browser["company_id"] = [str(project[0])]
+        self.browser["project_id"] = [str(project[1])]
+        self.browser["task_type_id"] = ["1"]
+        self.browser["num_hours"] = str(hours)
+        self.browser["num_mins"] = str(minutes)
+        submit =  self.browser.find_control("user_action")
+        submit.disabled = False
+
+        #pdb.set_trace()
+
+
+        #post_url, post_data, headers = self.browser.form.click_request_data()
+        #print post_url
+        #print post_data
+        #print mechanize.urlopen(post_url, post_data).readlines()
+
+        #control = form.find_control(#comments#)
+        #print control.disabled
+
+        #print str(project[0])
+
+        self.browser.submit()
+
         print "(fake) Setting %s:%s on day %s / project: %s" % (hours, minutes, timestamp, project)
 
 
