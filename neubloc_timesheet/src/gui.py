@@ -273,7 +273,7 @@ class TimesheetUI(Gtk.Application):
         self.today_passed.set_markup(delta_str)
         self.today_remaining.set_markup(rdelta_str)
 
-        data = """Passed:\n<b>%(passed)s</b>\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': delta_str, 'remaining': rdelta_str}
+        data = """Passed:\n<b>%(passed)s</b>\n\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': delta_str, 'remaining': rdelta_str}
         self.status_icon.set_tooltip_markup(data)
 
 
