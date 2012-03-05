@@ -75,6 +75,9 @@ class TimesheetUI(Gtk.Application):
         self.toggle_home = builder.get_object("client_home")
         self.toggle_neubloc = builder.get_object("client_neubloc")
 
+        self.today_passed = builder.get_object("today_passed")
+        self.today_remaining = builder.get_object("today_remaining")
+
         self.start = builder.get_object("start")
         self.stop= builder.get_object("stop")
         #self.start.set_sensitive(False)
@@ -265,11 +268,12 @@ class TimesheetUI(Gtk.Application):
             rdelta_str = "0"
 
         # time passed
-        delta = self._timedelta_to_string(delta)
+        delta_str = self._timedelta_to_string(delta)
 
-        data = """Passed:\n<b>%(passed)s</b>\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': delta, 'remaining': rdelta_str}
+        self.today_passed.set_markup(delta_str)
+        self.today_remaining.set_markup(rdelta_str)
 
-        self.today_hours.set_markup(data)
+        data = """Passed:\n<b>%(passed)s</b>\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': delta_str, 'remaining': rdelta_str}
         self.status_icon.set_tooltip_markup(data)
 
 
@@ -289,7 +293,8 @@ class TimesheetUI(Gtk.Application):
     def _month_hours(self, hlist):
         hours = self.timesheet.hours()
         color = COLORS['red'] if hours[0] == '-' else COLORS['green']
-        self.hours.set_markup("<span color='%s'>%s</span>" % (color, hours[1:]) ) 
+        sign = "-" if hours[0] == '-' else "+"
+        self.hours.set_markup("<span color='%s' size='large' font_weight='bold'>%s %s</span>" % (color, sign, hours[1:]) ) 
 
     # formatting for list
     def _hourlist(self, hlist):
