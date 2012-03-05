@@ -66,7 +66,7 @@ class TimesheetUI(Gtk.Application):
 
         self.statusbar = builder.get_object("statusbar")
         context_id = self.statusbar.get_context_id("context1")
-        self.statusbar.push(context_id, "asd")
+        self.statusbar.push(context_id, "..")
 
         # objects
         self.hourlist = builder.get_object("hourlist")
