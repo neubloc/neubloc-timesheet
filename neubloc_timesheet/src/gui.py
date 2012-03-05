@@ -4,7 +4,6 @@ import pdb
 import os, sys
 import time
 import signal
-from threading import Thread
 from datetime import date, datetime, timedelta
 
 from gi.repository import Gtk, Gio, Gdk, GLib
@@ -13,6 +12,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
 
 from lib.timesheet import *
 from lib.config import *
+
+from decorators import threaded 
 
 DEBUG = bool(os.getenv('DEBUG'))
 COLORS = { 'green': "#33af95ac3c98", 'red': "#ffff587b587b" }
@@ -31,7 +32,7 @@ class TimesheetUI(Gtk.Application):
         self.on_activate()
 
         # threads
-        self.today_hours_thr = Thread(target=self._today_hours_thread).start()
+        self.today_hours_thr = self._today_hours_thread()
 
     def run(self):
         GLib.threads_init()
@@ -62,6 +63,10 @@ class TimesheetUI(Gtk.Application):
         self.status_icon.set_visible(True)
         self.status_icon.connect("activate", self.on_icon_activated)
         self.status_icon.connect("popup-menu", self.on_icon_popup)
+
+        self.statusbar = builder.get_object("statusbar")
+        context_id = self.statusbar.get_context_id("context1")
+        self.statusbar.push(context_id, "asd")
 
         # objects
         self.hourlist = builder.get_object("hourlist")
@@ -110,24 +115,22 @@ class TimesheetUI(Gtk.Application):
         self.window.set_keep_above(True)
 
 
-    def on_start(self, action):
-        Thread(target=self._on_start).start()
 
-    def _on_start(self):
+    @threaded
+    def on_start(self, data=None):
         self.timesheet.start()
         self._reload()
 
-    def on_stop(self, action):
-        Thread(target=self._on_stop).start()
-
-    def _on_stop(self):
+    @threaded
+    def on_stop(self, data=None):
         self.timesheet.stop()
         self._reload()
 
-    #def on_projecthours_set(self, data):
-    #    Thread(target=self._on_projecthours_set, args=(data,)).start()
-
     def on_projecthours_set(self, data):
+        x = self._projecthours_set()
+
+    @threaded
+    def _projecthours_set(self):
         radio = [r for r in self.project_buttons[0].get_group() if r.get_active()][0] 
         projectname = radio.get_label()
         project = self.config.get_projects()[projectname]
@@ -137,9 +140,14 @@ class TimesheetUI(Gtk.Application):
         self.days_selection.selected_foreach(self._set_single_projecthours, project)
 
         if self.projecthours_errors:
-            alert = Gtk.MessageDialog()
-            alert.set_markup("Cannot set project hours for days:\n\n%s" % "\n".join(self.projecthours_errors))
-            alert.show_all()
+            #alert = Gtk.MessageDialog()
+            #alert.set_markup("Cannot set project hours for days:\n\n%s" % "\n".join(self.projecthours_errors))
+            #alert.show()
+
+            #md = Gtk.MessageDialog(self, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Download completed")
+            #md.run()
+            #md.destroy()
+            pass
 
         self._daylist()
 
@@ -148,12 +156,12 @@ class TimesheetUI(Gtk.Application):
 
         hours, minutes = daydata[TIME].split(':')
 
-        if self._projecthours_day_ready(daydata):
+        if self._is_projecthours_day_ready(daydata):
             self.timesheet.set_projecthours(daydata[TIMESTAMP], project, hours, minutes) 
         else:
             self.projecthours_errors.append("%s/%s" %(daydata[NR], daydata[NAME]))
 
-    def _projecthours_day_ready(self, daydata):
+    def _is_projecthours_day_ready(self, daydata):
         return daydata[DESCRIPTION] == "Praca" and \
                daydata[TIMESTAMP] and \
                not daydata[PROJECTHOURS]
@@ -205,6 +213,7 @@ class TimesheetUI(Gtk.Application):
         Gtk.main_quit()
         signal.alarm(1)
 
+    @threaded
     def _reload(self):
         if DEBUG:
             hlist = [
@@ -263,6 +272,8 @@ class TimesheetUI(Gtk.Application):
         self.today_hours.set_markup(data)
         self.status_icon.set_tooltip_markup(data)
 
+
+    @threaded
     def _today_hours_thread(self):
         while True:
             self._today_hours()
