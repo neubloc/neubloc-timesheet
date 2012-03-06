@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
 
-import pdb
 import os, sys
 import time
 import signal
@@ -29,7 +28,8 @@ class TimesheetUI(Gtk.Application):
         Gtk.Application.__init__(self, 
                 application_id="apps.test.helloworld", 
                 flags=Gio.ApplicationFlags.FLAGS_NONE)
-        self.on_activate()
+
+        self.objects_assign()
 
         # threads
         self.today_hours_thr = self._today_hours_thread()
@@ -39,34 +39,13 @@ class TimesheetUI(Gtk.Application):
         Gdk.threads_enter()
         Gtk.main()
         Gdk.threads_leave()
-
-    ###  signal handlers
-    def on_quit(self, widget, data=None):
-        self._toggle_visibility()
-        return True
      
-    def on_activate(self, data=None):
+    def objects_assign(self, data=None):
         current_dir = os.path.dirname(os.path.abspath(__file__))
+
         builder = Gtk.Builder()
         builder.add_from_file("%s%s" % (current_dir, "/static/gui.glade")) 
         builder.connect_signals(self)       
-
-        # status icon
-        self.status_icon = Gtk.StatusIcon()
-        self.status_icon.set_from_file(
-                os.path.join(current_dir, 'static/icon.png'))
-
-        if DEBUG:
-            self.status_icon.set_from_file(
-                    os.path.join(current_dir, 'static/icon_debug.png'))
-
-        self.status_icon.set_visible(True)
-        self.status_icon.connect("activate", self.on_icon_activated)
-        self.status_icon.connect("popup-menu", self.on_icon_popup)
-
-        self.statusbar = builder.get_object("statusbar")
-        context_id = self.statusbar.get_context_id("context1")
-        self.statusbar.push(context_id, "..")
 
         # objects
         self.hourlist = builder.get_object("hourlist")
@@ -80,7 +59,6 @@ class TimesheetUI(Gtk.Application):
 
         self.start = builder.get_object("start")
         self.stop= builder.get_object("stop")
-        #self.start.set_sensitive(False)
 
         self.hours_model = builder.get_object("hourlist_store")
         self.hours_list = builder.get_object("hourlist_view")
@@ -88,6 +66,24 @@ class TimesheetUI(Gtk.Application):
         self.days_model = builder.get_object("days_store")
         self.days_list = builder.get_object("days_view")
         self.days_selection = builder.get_object('days_selection')
+
+        self.statusbar = builder.get_object("statusbar")
+
+        self.project_choose_box = builder.get_object("project_choose_box")
+        self.window = builder.get_object("window")
+
+        # status icon
+        self.status_icon = Gtk.StatusIcon()
+        self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon.png'))
+        if DEBUG:
+            self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon_debug.png'))
+        self.status_icon.set_visible(True)
+        self.status_icon.connect("activate", self.on_icon_activated)
+        self.status_icon.connect("popup-menu", self.on_icon_popup)
+
+        context_id = self.statusbar.get_context_id("context1")
+        self.statusbar.push(context_id, "..")
+
 
         self.config = Config()
         self.timesheet = Timesheet(self.config.get_user(), 
@@ -99,7 +95,6 @@ class TimesheetUI(Gtk.Application):
             self.toggle_neubloc.set_active(True)
 
         #project choose
-        self.project_choose_box = builder.get_object("project_choose_box")
         self.project_buttons = []
         for name, ids in self.config.get_projects().items():
             group = self.project_buttons[0] if len(self.project_buttons) else None
@@ -111,13 +106,15 @@ class TimesheetUI(Gtk.Application):
 
         self._reload()
 
-        self.window = builder.get_object("window")
         if self.config.get_minimized() == False:
             self._toggle_visibility()
 
         self.window.set_keep_above(True)
 
-
+    ###  signal handlers
+    def on_quit(self, widget, data=None):
+        self._toggle_visibility()
+        return True
 
     @threaded
     def on_start(self, data=None):
@@ -218,64 +215,30 @@ class TimesheetUI(Gtk.Application):
 
     @threaded
     def _reload(self):
-        if DEBUG:
-            hlist = [
-             (datetime(1,1,1,19, 00, 11).time(), 'OS (Start Dom)'), 
-             (datetime(1,1,1,16, 46, 11).time(), 'DK (Koniec Dom)'), 
-             (datetime(1,1,1,8,  34, 58).time(), 'DS (Start Dom)')
-            ]
-        else:
-            hlist  = self.timesheet.hourlist(datetime.now())
+        self.timesheet.get_hourlist(datetime.now())
 
-        hlist.reverse()
-        self.hlist = hlist
-
-        self._today_hours(hlist)
-        self._month_hours(hlist)
-        self._hourlist(hlist)
+        self._hourlist()
+        self._today_hours()
+        self._month_hours()
         self._daylist()
 
     # count today hours
-    def _today_hours(self, hlist=None):
-        if hlist == None: hlist = self.hlist
-
-        delta = timedelta(0)
-        for h1,h2 in zip(hlist[::2],hlist[1::2]):
-            t1 = h1[0]
-            minute = -1 if t1.second >= 30 else 0
-            t1 = (datetime.combine(date.today(), t1) - timedelta(minutes=minute, seconds=t1.second))
-
-            t2 = h2[0]
-            minute = -1 if t2.second >= 30 else 0
-            t2 = (datetime.combine(date.today(), t2) - timedelta(minutes=minute, seconds=t2.second))
-
-            delta += (t2 - t1)
-
-        if len(hlist) % 2 == 1:
-            delta += datetime.now() - datetime.combine(datetime.now(), hlist[-1][0]) 
+    def _today_hours(self):
+        (passed, remainig, done) = self.timesheet.get_today_hours()
 
         # time remaining
-        try:
-            rdelta = timedelta(hours=8) - delta
-            if(rdelta < timedelta(hours=0)):
-                rdelta = delta - timedelta(hours=8)
-                rdelta_str = '<span fgcolor="%s">+ %s</span>' % (
-                        COLORS['green'], 
-                        self._timedelta_to_string(delta - timedelta(hours=8)))
-            else:
-                rdelta_str = self._timedelta_to_string(timedelta(hours=8) - delta)
-        except OverflowError:
-            rdelta_str = "0"
+        if done:
+            remaining_str = '<span fgcolor="%s">+ %s</span>' % ( COLORS['green'], self._timedelta_to_string(passed - timedelta(hours=8)))
+        else:
+            remaining_str = self._timedelta_to_string(timedelta(hours=8) - passed)
 
         # time passed
-        delta_str = self._timedelta_to_string(delta)
+        passed_str = self._timedelta_to_string(passed)
 
-        self.today_passed.set_markup(delta_str)
-        self.today_remaining.set_markup(rdelta_str)
-
-        data = """Passed:\n<b>%(passed)s</b>\n\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': delta_str, 'remaining': rdelta_str}
+        self.today_passed.set_markup(passed_str)
+        self.today_remaining.set_markup(remaining_str)
+        data = """Passed:\n<b>%(passed)s</b>\n\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': passed_str, 'remaining': remaining_str}
         self.status_icon.set_tooltip_markup(data)
-
 
     @threaded
     def _today_hours_thread(self):
@@ -290,14 +253,16 @@ class TimesheetUI(Gtk.Application):
         return "%d:%.2d:%.2d" % (delta_h, delta_m, delta_s)        
 
     # month hours bilans
-    def _month_hours(self, hlist):
+    def _month_hours(self):
         hours = self.timesheet.hours()
         color = COLORS['red'] if hours[0] == '-' else COLORS['green']
         sign = "-" if hours[0] == '-' else "+"
         self.hours.set_markup("<span color='%s' size='large' font_weight='bold'>%s %s</span>" % (color, sign, hours[1:]) ) 
 
     # formatting for list
-    def _hourlist(self, hlist):
+    def _hourlist(self):
+        hlist = self.timesheet.hourlist
+        hlist.reverse()
         self.hours_model.clear()
 
         for (time, type) in hlist:
@@ -308,9 +273,8 @@ class TimesheetUI(Gtk.Application):
 
 
     def _daylist(self):
+        daylist = self.timesheet.get_daylist()
         self.days_model.clear()
-
-        daylist = self.timesheet.daylist()
 
         for (nr, name, time, description, timestamp, projecthours) in daylist:
             self.days_model.append([nr, 
