@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
-from gi.repository import Gtk, Gio, Gdk, GLib
+from gi.repository import Gtk, Gio, Gdk, GLib, GObject
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
 
@@ -38,7 +38,7 @@ class TimesheetUI(Gtk.Application):
         self.today_hours_thr = self._today_hours_thread()
 
     def run(self):
-        GLib.threads_init()
+        GObject.threads_init()
         Gdk.threads_enter()
         Gtk.main()
         Gdk.threads_leave()
