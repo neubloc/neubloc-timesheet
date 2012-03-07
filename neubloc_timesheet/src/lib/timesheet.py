@@ -1,7 +1,6 @@
 #!/usr/bin/env python2
 
 import os
-import pdb
 import mechanize
 import time
 from datetime import datetime

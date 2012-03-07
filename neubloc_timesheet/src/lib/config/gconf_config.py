@@ -1,4 +1,5 @@
 
+import subprocess
 import gconf
 
 from actions import *
@@ -11,7 +12,7 @@ class Config(object):
         try:
             self.client = gconf.client_get_default()
         except:
-            print "client error"
+            print "Config/keyring client error"
 
     def _get(self, key, default=None):
         val = self.client.get_string(self._expand(key))
@@ -19,6 +20,9 @@ class Config(object):
             self._set(key, default)
             val = self.client.get_string(self._expand(key))
         return val
+
+    def _get_only(self, key):
+        return self.client.get_string(self._expand(key))
 
     def _set(self, key, val):
         self.client.set_string(self._expand(key), str(val))
@@ -49,8 +53,12 @@ class Config(object):
         return self._set('minimized', int(val))
 
 
-    def get_user(self):
-        return self._get('user', 'mrim')
+    def get_user(self, default=None):
+        if not self._get_only('user'):
+            user = self.prompt_for_user()
+            self.set_user(user)
+
+        return self._get_only('user')
 
     def set_user(self, val):
         return self._set('user', val)
@@ -62,6 +70,15 @@ class Config(object):
 
         projects = self._get('projects', default)
         return eval(projects)
+
+    def prompt_for_user(self):
+        user = subprocess.check_output([
+            'zenity', '--entry', 
+            '--title', 'Karta Pracy username', 
+            '--text',  'Enter your login for Timesheet:', 
+            '--entry-text', 'login' 
+        ])
+        return user
 
 
 
