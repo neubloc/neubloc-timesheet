@@ -8,8 +8,8 @@ def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
 
 NAME = 'neubloc-timesheet'
-VERSION = '0.1' #read('VERSION').replace("\n",'')
-DESCRIPTION = 'description temporary disabled' #read('README')
+VERSION = read('VERSION').replace("\n",'')
+DESCRIPTION = read('README')
 
 setup(
     name = NAME,
@@ -32,18 +32,10 @@ setup(
         'setuptools',
         'mechanize',
         'BeautifulSoup',
-        #'PyGObject',
-        #'gconf',
-        #'pdb',
-        #'sphinx'
         'keyring',
     ],
     zip_safe = False,
     entry_points = {
-        ## self run egg file
-        #'setuptools.installation': [
-        #    'eggsecutable = timesheet.run',
-        #]
         'console_scripts': [
            # modify script_name with the name you want use from shell
            # $ script_name [params]
