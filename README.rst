@@ -21,4 +21,6 @@ Installation
 ------------
 To install latest version::
 
+        sudo pip install -eU git+git://github.com/neubloc/neubloc-timesheet.git#egg=neubloc_timesheet
+        or
         sudo pip install -U git+git://github.com/neubloc/neubloc-timesheet.git

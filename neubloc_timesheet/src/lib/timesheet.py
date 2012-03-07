@@ -32,7 +32,7 @@ class Timesheet(object):
         self.user = user
 
         self.actions = Actions.get(client)
-        self._login()
+        #self._login()
 
     def _reload(self):
         self.browser = mechanize.Browser()
@@ -45,7 +45,6 @@ class Timesheet(object):
     def _login(self):
         self._reload()
         self._open()
-        print "asd"
 
         self.browser.select_form(nr=0)
 
@@ -88,6 +87,7 @@ class Timesheet(object):
             return entries
 
         self._login()
+
         timestamp = time.mktime(date.timetuple())
         self._open("action_popup.php?date=%s" % int(timestamp))
         page = self.browser.response().get_data()
@@ -113,6 +113,7 @@ class Timesheet(object):
         return entries
 
     def get_daylist(self, date = datetime.now()):
+
         page = self._login()
 
         soup = BeautifulSoup(page)
@@ -152,7 +153,7 @@ class Timesheet(object):
         return entries
 
     def set_projecthours(self, timestamp, project, hours, minutes):
-        #self._login()
+        self._login()
         self._open('task_popup.php?date=%s' % timestamp)
         self.browser.select_form(nr=0)
 
@@ -171,7 +172,9 @@ class Timesheet(object):
         self.browser.submit()
 
     def get_today_hours(self, date = datetime.now()):
-        hlist = self.hourlist if self.hourlist else self.get_hourlist(date)
+        if not self.hourlist:
+            return (timedelta(0), timedelta(0), False)
+        hlist = self.hourlist
 
         delta = timedelta(0)
         nonedate = datetime(1,1,1,0,0,0)

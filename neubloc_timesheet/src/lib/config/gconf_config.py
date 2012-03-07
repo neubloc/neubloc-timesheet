@@ -78,7 +78,7 @@ class Config(object):
             '--text',  'Enter your login for Timesheet:', 
             '--entry-text', 'login' 
         ])
-        return user
+        return user.replace("\n", '')
 
 
 

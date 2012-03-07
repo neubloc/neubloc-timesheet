@@ -221,7 +221,6 @@ class TimesheetUI(Gtk.Application):
         self.timesheet.get_hourlist(datetime.now())
 
         self._hourlist()
-        self._today_hours()
         self._month_hours()
         self._daylist()
 
