@@ -9,7 +9,7 @@ def read(filename):
 
 NAME = 'neubloc-timesheet'
 VERSION = read('VERSION').replace("\n",'')
-DESCRIPTION = read('README')
+DESCRIPTION = read('README.rst')
 
 setup(
     name = NAME,
