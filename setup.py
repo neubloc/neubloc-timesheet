@@ -30,6 +30,7 @@ setup(
     install_requires = [
         'setuptools',
         'mechanize',
+        'BeautifulSoup'
         #'PyGObject',
         #'gconf',
         #'pdb',
