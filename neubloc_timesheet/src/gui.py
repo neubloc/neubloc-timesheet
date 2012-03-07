@@ -85,6 +85,8 @@ class TimesheetUI(Gtk.Application):
         self.window = builder.get_object("window")
 
     def statusicon_init(self):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+
         # status icon
         self.status_icon = Gtk.StatusIcon()
         self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon.png'))
@@ -104,7 +106,7 @@ class TimesheetUI(Gtk.Application):
         self.timesheet = Timesheet(self.config.get_user(), 
                                    self.config.get_client())       
 
-    def actionbuttons_init():
+    def actionbuttons_init(self):
         if self.timesheet.client == Actions.HOME:
             self.toggle_home.set_active(True)
         else:
