@@ -31,4 +31,5 @@ class Password(object):
             '--entry-text', 'password', 
             '--hide-text'
         ])
-        Password.set(user, password)
+        Password.set(user, password.replace("\n", ''))
+        

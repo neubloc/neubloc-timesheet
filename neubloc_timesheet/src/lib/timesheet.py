@@ -49,6 +49,9 @@ class Timesheet(object):
         self.browser.select_form(nr=0)
 
         password = Password.get(self.user)
+        # @TODO remove
+        password = password.replace("\n", '')
+        self.user = self.user.replace("\n", '')
 
         self.browser["name"] = self.user
         self.browser["pass"] = password 
