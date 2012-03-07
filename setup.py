@@ -8,7 +8,8 @@ def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
 
 NAME = 'neubloc-timesheet'
-VERSION = read('VERSION').replace("\n",'')
+VERSION = '0.1' #read('VERSION').replace("\n",'')
+DESCRIPTION = 'description temporary disabled' #read('README')
 
 setup(
     name = NAME,
@@ -19,7 +20,7 @@ setup(
     packages = find_packages(),
     package_data = {'neubloc_timesheet.src.static': ['*']},
     include_package_data = True,
-    long_description = read('README'),
+    long_description = DESCRIPTION, 
     classifiers = [
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
