@@ -9,6 +9,7 @@ def read(filename):
 
 NAME = 'neubloc-timesheet'
 VERSION = read('VERSION').replace("\n",'')
+DESCRIPTION = read('README.rst')
 
 setup(
     name = NAME,
@@ -19,7 +20,7 @@ setup(
     packages = find_packages(),
     package_data = {'neubloc_timesheet.src.static': ['*']},
     include_package_data = True,
-    long_description = read('README'),
+    long_description = DESCRIPTION, 
     classifiers = [
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
@@ -30,18 +31,11 @@ setup(
     install_requires = [
         'setuptools',
         'mechanize',
-        #'PyGObject',
-        #'gconf',
-        #'pdb',
-        #'sphinx'
+        'BeautifulSoup',
         'keyring',
     ],
     zip_safe = False,
     entry_points = {
-        ## self run egg file
-        #'setuptools.installation': [
-        #    'eggsecutable = timesheet.run',
-        #]
         'console_scripts': [
            # modify script_name with the name you want use from shell
            # $ script_name [params]

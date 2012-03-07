@@ -5,6 +5,9 @@ import time
 import signal
 from datetime import date, datetime, timedelta
 
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("Gdk", "3.0")
 from gi.repository import Gtk, Gio, Gdk, GLib
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
