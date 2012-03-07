@@ -33,6 +33,7 @@ setup(
         'mechanize',
         'BeautifulSoup',
         'keyring',
+        'procname',
     ],
     zip_safe = False,
     entry_points = {

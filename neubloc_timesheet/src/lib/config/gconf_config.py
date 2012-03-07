@@ -47,7 +47,7 @@ class Config(object):
 
 
     def get_minimized(self):
-        return False if self._get('minimized', False) == '0' else True
+        return False if self._get('minimized', 0) == '0' else True
 
     def set_minimized(self, val):
         return self._set('minimized', int(val))
