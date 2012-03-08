@@ -39,10 +39,6 @@ class TimesheetUI(Gtk.Application):
             self._toggle_visibility()
         self.window.set_keep_above(True)
 
-        # threads
-        self._reload()
-        self.today_hours_thr = self._today_hours_thread()
-
     def run(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -73,6 +69,10 @@ class TimesheetUI(Gtk.Application):
             self.status_icon.set_visible(True)
             self.status_icon.connect("activate", self.on_icon_activated)
             self.status_icon.connect("popup-menu", self.on_icon_popup)
+
+        # threads
+        self._reload()
+        self.today_hours_thr = self._today_hours_thread()
 
         GObject.threads_init()
         Gdk.threads_enter()
