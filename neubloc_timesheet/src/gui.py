@@ -266,7 +266,7 @@ class TimesheetUI(Gtk.Application):
             self.status_icon.set_tooltip_markup(data)
         else:
             self.indicator_menu1.get_child().set_text("Passed:    %s" % passed_str)
-            self.indicator_menu2.get_child().set_text("Remaining: %s" % remainig_str)
+            self.indicator_menu2.get_child().set_text("Remaining: %s" % remaining_str)
 
     @threaded
     def _today_hours_thread(self):
