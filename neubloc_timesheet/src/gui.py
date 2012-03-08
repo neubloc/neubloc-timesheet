@@ -53,6 +53,7 @@ class TimesheetUI(Gtk.Application):
             item = Gtk.MenuItem("Neubloc Timesheet: show")
             item.connect('activate', self.on_icon_activated, "")
             menu.append(item)
+            item.show()
 
             ind.set_menu(menu)
         except ImportError:
