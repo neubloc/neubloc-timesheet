@@ -4,7 +4,7 @@
 import os
 import mechanize
 import time
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from datetime import time as time2 
 import re
 
@@ -46,8 +46,7 @@ class Timesheet(object):
     def _login(self):
         self._reload()
         self._open()
-
-        self.browser.select_form(nr=0)
+        self._select_form('login_form')
 
         password = Password.get(self.user)
         # @TODO remove
@@ -60,13 +59,17 @@ class Timesheet(object):
 
     def _do(self, action):
         self._login()
-        self.browser.select_form(nr=0)
+        self._select_form('action_form')
 
         if DEBUG:
             print("fake submit | action: %s (%s)" % (action, self.actions[action]))
             return
 
         self.browser.submit(name="action_val", label=self.actions[action])
+
+    def _select_form(self, form_id):
+        self.browser._factory.is_html = True
+        self.browser.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == form_id)
 
     ### public 
     def start(self):

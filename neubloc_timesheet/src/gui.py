@@ -150,6 +150,7 @@ class TimesheetUI(Gtk.Application):
         self.timesheet.stop()
         self._reload()
 
+    @threaded
     def on_projecthours_set(self, data=None):
         radio = [r for r in self.project_buttons[0].get_group() if r.get_active()][0] 
         projectname = radio.get_label()
