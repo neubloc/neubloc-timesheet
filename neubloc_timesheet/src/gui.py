@@ -53,8 +53,8 @@ class TimesheetUI(Gtk.Application):
             ind.set_status (appindicator.IndicatorStatus.ACTIVE)
             ind.set_attention_icon ("indicator-messages")
 
-            menu = gtk.Menu()
-            item = gtk.MenuItem("Empty")
+            menu = Gtk.Menu()
+            item = Gtk.MenuItem("Empty")
             item.show()
             menu.append(item)
             ind.set_menu(menu)
