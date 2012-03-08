@@ -90,18 +90,20 @@ class TimesheetUI(Gtk.Application):
         # status icon
         try:
             from gi.repository import AppIndicator3 as appindicator
-            ind = appindicator.Indicator.new ( "neubloc_timesheet", "indicator-messages", appindicator.IndicatorCategory.APPLICATION_STATUS)
+            ind = appindicator.Indicator.new ( "neubloc_timesheet", "apport", appindicator.IndicatorCategory.APPLICATION_STATUS)
             ind.set_status (appindicator.IndicatorStatus.ACTIVE)
-            ind.set_attention_icon ("indicator-messages-new")
-            ind.set_icon ("indicator-messages-new")
+            ind.set_attention_icon ("apport")
+            ind.set_icon ("apport")
         except ImportError:
-            self.status_icon = Gtk.StatusIcon()
-            self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon.png'))
-            if DEBUG:
-                self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon_debug.png'))
-            self.status_icon.set_visible(True)
-            self.status_icon.connect("activate", self.on_icon_activated)
-            self.status_icon.connect("popup-menu", self.on_icon_popup)
+            pass
+
+        self.status_icon = Gtk.StatusIcon()
+        self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon.png'))
+        if DEBUG:
+            self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon_debug.png'))
+        self.status_icon.set_visible(True)
+        self.status_icon.connect("activate", self.on_icon_activated)
+        self.status_icon.connect("popup-menu", self.on_icon_popup)
 
     def statusbar_init(self):
         #context_id = self.statusbar.get_context_id("context1")
