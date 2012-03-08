@@ -3,12 +3,12 @@
 import os, sys
 import time
 import signal
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
-from gi.repository import Gtk, Gio, Gdk, GLib, GObject
+from gi.repository import Gtk, Gio, Gdk, GObject
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
 
@@ -88,13 +88,20 @@ class TimesheetUI(Gtk.Application):
         current_dir = os.path.dirname(os.path.abspath(__file__))
 
         # status icon
-        self.status_icon = Gtk.StatusIcon()
-        self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon.png'))
-        if DEBUG:
-            self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon_debug.png'))
-        self.status_icon.set_visible(True)
-        self.status_icon.connect("activate", self.on_icon_activated)
-        self.status_icon.connect("popup-menu", self.on_icon_popup)
+        try:
+            from gi.repository import AppIndicator3 as appindicator
+            ind = appindicator.Indicator.new ( "neubloc_timesheet", "indicator-messages", appindicator.IndicatorCategory.APPLICATION_STATUS)
+            ind.set_status (appindicator.IndicatorStatus.ACTIVE)
+            ind.set_attention_icon ("indicator-messages-new")
+            ind.set_icon ("indicator-messages-new")
+        except ImportError:
+            self.status_icon = Gtk.StatusIcon()
+            self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon.png'))
+            if DEBUG:
+                self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon_debug.png'))
+            self.status_icon.set_visible(True)
+            self.status_icon.connect("activate", self.on_icon_activated)
+            self.status_icon.connect("popup-menu", self.on_icon_popup)
 
     def statusbar_init(self):
         #context_id = self.statusbar.get_context_id("context1")

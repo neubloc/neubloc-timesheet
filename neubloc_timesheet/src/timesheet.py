@@ -1,12 +1,12 @@
 #!/usr/bin/env python2
 
 import signal
-import procname
+import setproctitle
 from gui import TimesheetUI
 
 def run():
 
-    procname.setprocname('neubloc_timesheet')
+    setproctitle.setproctitle('neubloc_timesheet')
 
     app = TimesheetUI()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
