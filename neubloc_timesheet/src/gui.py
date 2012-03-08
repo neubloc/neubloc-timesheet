@@ -255,7 +255,7 @@ class TimesheetUI(Gtk.Application):
         self.today_passed.set_markup(passed_str)
         self.today_remaining.set_markup(remaining_str)
         data = """Passed:\n<b>%(passed)s</b>\n\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': passed_str, 'remaining': remaining_str}
-        if hasattr(self, status_icon):
+        if hasattr(self, 'status_icon'):
             self.status_icon.set_tooltip_markup(data)
 
     @threaded
