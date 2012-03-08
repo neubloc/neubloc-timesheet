@@ -21,19 +21,16 @@ DEBUG = bool(os.getenv('DEBUG'))
 COLORS = { 'green': "#33af95ac3c98", 'red': "#ffff587b587b" }
 
 class TimesheetUI(Gtk.Application):
-
     """
         Gtk3 app for Timesheet lib
     """
-    hlist = []
 
     def __init__(self):
         Gtk.Application.__init__(self, 
-                application_id="apps.test.helloworld", 
+                application_id="apps.neubloc.timesheet", 
                 flags=Gio.ApplicationFlags.FLAGS_NONE)
 
         self.objects_assign()
-        self.statusicon_init()
         #self.statusbar_init()
         self.modules_init()
         self.actionbuttons_init()
@@ -47,6 +44,29 @@ class TimesheetUI(Gtk.Application):
         self.today_hours_thr = self._today_hours_thread()
 
     def run(self):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # status icon
+        try:
+            from gi.repository import AppIndicator3 as appindicator
+            ind = appindicator.Indicator.new ( "neubloc_timesheet", "indicator-messages", appindicator.IndicatorCategory.APPLICATION_STATUS)
+            ind.set_status (appindicator.IndicatorStatus.ACTIVE)
+            ind.set_attention_icon ("indicator-messages")
+
+            menu = gtk.Menu()
+            item = gtk.MenuItem("Empty")
+            item.show()
+            menu.append(item)
+            ind.set_menu(menu)
+        except ImportError:
+            self.status_icon = Gtk.StatusIcon()
+            self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon.png'))
+            if DEBUG:
+                self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon_debug.png'))
+            self.status_icon.set_visible(True)
+            self.status_icon.connect("activate", self.on_icon_activated)
+            self.status_icon.connect("popup-menu", self.on_icon_popup)
+
         GObject.threads_init()
         Gdk.threads_enter()
         Gtk.main()
@@ -85,33 +105,6 @@ class TimesheetUI(Gtk.Application):
         self.window = builder.get_object("window")
 
     def statusicon_init(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-
-        # status icon
-        try:
-            from gi.repository import AppIndicator3 as appindicator
-            ind = appindicator.Indicator.new ( "neubloc_timesheet", "indicator-messages", appindicator.IndicatorCategory.APPLICATION_STATUS)
-            ind.set_status (appindicator.IndicatorStatus.ACTIVE)
-            ind.set_attention_icon ("indicator-messages")
-            #ind.set_icon ("indicator-messages")
-
-            menu = gtk.Menu()
-            faq_item = gtk.MenuItem("Debian FAQ")
-            #faq_item.connect("activate", faq_clicked)
-            faq_item.show()
-            menu.append(faq_item)
-            
-            ind.set_menu(menu)
-        except ImportError:
-            pass
-
-        self.status_icon = Gtk.StatusIcon()
-        self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon.png'))
-        if DEBUG:
-            self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon_debug.png'))
-        self.status_icon.set_visible(True)
-        self.status_icon.connect("activate", self.on_icon_activated)
-        self.status_icon.connect("popup-menu", self.on_icon_popup)
 
     def statusbar_init(self):
         #context_id = self.statusbar.get_context_id("context1")
