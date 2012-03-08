@@ -2,7 +2,7 @@
 
 import os
 from setuptools import setup, find_packages
-from DistUtilsExtra.command import build_icons 
+#from DistUtilsExtra.command import build_icons 
 
 
 def read(filename):
@@ -44,5 +44,4 @@ setup(
            'neubloc_timesheet = neubloc_timesheet.src.timesheet:run',
         ],
     },
-    cmdclass = { "build_icons" : build_icons.build_icons, }
 )
