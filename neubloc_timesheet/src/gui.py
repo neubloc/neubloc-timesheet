@@ -90,10 +90,18 @@ class TimesheetUI(Gtk.Application):
         # status icon
         try:
             from gi.repository import AppIndicator3 as appindicator
-            ind = appindicator.Indicator.new ( "neubloc_timesheet", "apport", appindicator.IndicatorCategory.APPLICATION_STATUS)
+            ind = appindicator.Indicator.new ( "neubloc_timesheet", "indicator-messages", appindicator.IndicatorCategory.APPLICATION_STATUS)
             ind.set_status (appindicator.IndicatorStatus.ACTIVE)
-            ind.set_attention_icon ("apport")
-            ind.set_icon ("apport")
+            ind.set_attention_icon ("indicator-messages")
+            #ind.set_icon ("indicator-messages")
+
+            menu = gtk.Menu()
+            faq_item = gtk.MenuItem("Debian FAQ")
+            #faq_item.connect("activate", faq_clicked)
+            faq_item.show()
+            menu.append(faq_item)
+            
+            ind.set_menu(menu)
         except ImportError:
             pass
 
