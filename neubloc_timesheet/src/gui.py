@@ -191,7 +191,7 @@ class TimesheetUI(Gtk.Application):
 
         self.config.set_client(self.timesheet.client)
 
-    def on_icon_activated(self, data=None):
+    def on_icon_activated(self, data=None, buf=None):
         self._toggle_visibility()
 
     def on_icon_popup(self, data, arg1, arg2):
