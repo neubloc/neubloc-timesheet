@@ -50,16 +50,10 @@ class TimesheetUI(Gtk.Application):
             ind.set_attention_icon ("indicator-messages")
 
             menu = Gtk.Menu()
-            item1 = Gtk.MenuItem("passed")
-            item1.show()
-            self.indicator_menu1 = item1
+            item = Gtk.MenuItem("Neubloc Timesheet: show")
+            item.connect('activate', self.on_icon_activated, "")
+            menu.append(item)
 
-            item2 = Gtk.MenuItem("remain")
-            item2.show()
-            self.indicator_menu2 = item2
-
-            menu.append(item1)
-            menu.append(item2)
             ind.set_menu(menu)
         except ImportError:
             self.status_icon = Gtk.StatusIcon()
