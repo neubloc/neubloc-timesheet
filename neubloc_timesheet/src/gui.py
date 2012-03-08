@@ -104,7 +104,6 @@ class TimesheetUI(Gtk.Application):
         self.project_choose_box = builder.get_object("project_choose_box")
         self.window = builder.get_object("window")
 
-    def statusicon_init(self):
 
     def statusbar_init(self):
         #context_id = self.statusbar.get_context_id("context1")
