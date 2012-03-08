@@ -54,9 +54,16 @@ class TimesheetUI(Gtk.Application):
             ind.set_attention_icon ("indicator-messages")
 
             menu = Gtk.Menu()
-            item = Gtk.MenuItem("Empty")
-            item.show()
-            menu.append(item)
+            item1 = Gtk.MenuItem("passed")
+            item1.show()
+            self.indicator_menu1 = item1
+
+            item2 = Gtk.MenuItem("remain")
+            item2.show()
+            self.indicator_menu2 = item2
+
+            menu.append(item1)
+            menu.append(item2)
             ind.set_menu(menu)
         except ImportError:
             self.status_icon = Gtk.StatusIcon()
@@ -254,9 +261,12 @@ class TimesheetUI(Gtk.Application):
 
         self.today_passed.set_markup(passed_str)
         self.today_remaining.set_markup(remaining_str)
-        data = """Passed:\n<b>%(passed)s</b>\n\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': passed_str, 'remaining': remaining_str}
         if hasattr(self, 'status_icon'):
+            data = """Passed:\n<b>%(passed)s</b>\n\nRemaining:\n<b>%(remaining)s</b>""" % {'passed': passed_str, 'remaining': remaining_str}
             self.status_icon.set_tooltip_markup(data)
+        else:
+            self.indicator_menu1.get_widget().set_text("Passed:    %s" % passed_str)
+            self.indicator_menu2.get_widget().set_text("Remaining: %s" % remainig_str)
 
     @threaded
     def _today_hours_thread(self):
