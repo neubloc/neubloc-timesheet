@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkToggleAction" id="toggleaction1"/>
   <object class="GtkLabel" id="client_label_neubloc">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="label" translatable="yes">Neubloc</property>
-  </object>
-  <object class="GtkLabel" id="client_label_home">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="label" translatable="yes">Home</property>
   </object>
   <object class="GtkListStore" id="days_store">
     <columns>
@@ -37,6 +31,13 @@
       <!-- column-name style -->
       <column type="gchararray"/>
     </columns>
+  </object>
+  <object class="GtkIconFactory" id="iconfactory"/>
+  <object class="GtkToggleAction" id="toggleaction1"/>
+  <object class="GtkLabel" id="client_label_home">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="label" translatable="yes">Home</property>
   </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>

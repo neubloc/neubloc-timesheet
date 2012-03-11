@@ -41,27 +41,33 @@ class TimesheetUI(Gtk.Application):
         self.window.set_keep_above(True)
 
     def run(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-
         # status icon
+        icon_name = 'neubloc-timesheet' if not DEBUG else 'neubloc-timesheet-debug'
+
+        sitem = Gtk.StockItem()
+
+
         try:
             from gi.repository import AppIndicator3 as appindicator
-            ind = appindicator.Indicator.new ( "neubloc_timesheet", "indicator-messages", appindicator.IndicatorCategory.APPLICATION_STATUS)
-            ind.set_status (appindicator.IndicatorStatus.ACTIVE)
-            ind.set_attention_icon ("indicator-messages")
+            indicator = appindicator.Indicator.new ("neubloc-timesheet", icon_name, 
+                                              appindicator.IndicatorCategory.APPLICATION_STATUS)
+            indicator.set_status(appindicator.IndicatorStatus.ACTIVE)
+            indicator.set_attention_icon(icon_name)
 
             menu = Gtk.Menu()
-            item = Gtk.MenuItem("Neubloc Timesheet: show")
-            item.connect('activate', self.on_icon_activated, "")
-            menu.append(item)
-            item.show()
+            item1 = Gtk.MenuItem("show")
+            item1.connect('activate', self.on_icon_activated, "")
+            menu.append(item1)
+            item1.show()
+            item2 = Gtk.MenuItem("quit")
+            item2.connect('activate', self.on_quit, "")
+            menu.append(item2)
+            item2.show()
 
-            ind.set_menu(menu)
+            indicator.set_menu(menu)
         except ImportError:
             self.status_icon = Gtk.StatusIcon()
-            self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon.png'))
-            if DEBUG:
-                self.status_icon.set_from_file( os.path.join(current_dir, 'static/icon_debug.png'))
+            self.status_icon.set_from_icon_name(icon_name)
             self.status_icon.set_visible(True)
             self.status_icon.connect("activate", self.on_icon_activated)
             self.status_icon.connect("popup-menu", self.on_icon_popup)
@@ -103,8 +109,9 @@ class TimesheetUI(Gtk.Application):
         self.days_selection = builder.get_object('days_selection')
 
         self.statusbar = builder.get_object("statusbar")
-
         self.project_choose_box = builder.get_object("project_choose_box")
+        self.iconfactory = builder.get_object("iconfactory")
+
         self.window = builder.get_object("window")
 
 
