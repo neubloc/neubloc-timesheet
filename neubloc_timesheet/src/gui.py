@@ -44,8 +44,7 @@ class TimesheetUI(Gtk.Application):
         # status icon
         icon_name = 'neubloc-timesheet' if not DEBUG else 'neubloc-timesheet-debug'
 
-        sitem = Gtk.StockItem()
-
+        #sitem = Gtk.StockItem()
 
         try:
             from gi.repository import AppIndicator3 as appindicator
@@ -60,7 +59,7 @@ class TimesheetUI(Gtk.Application):
             menu.append(item1)
             item1.show()
             item2 = Gtk.MenuItem("quit")
-            item2.connect('activate', self.on_quit, "")
+            item2.connect('activate', self.on_icon_popup)
             menu.append(item2)
             item2.show()
 
@@ -203,7 +202,7 @@ class TimesheetUI(Gtk.Application):
     def on_icon_activated(self, data=None, buf=None):
         self._toggle_visibility()
 
-    def on_icon_popup(self, data, arg1, arg2):
+    def on_icon_popup(self, data=None, arg1=None, arg2=None):
         self._quit()
 
     def on_window_state(self, window, event):

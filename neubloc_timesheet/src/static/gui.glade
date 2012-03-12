@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkToggleAction" id="toggleaction1"/>
   <object class="GtkLabel" id="client_label_home">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -39,6 +38,7 @@
     </columns>
   </object>
   <object class="GtkIconFactory" id="iconfactory"/>
+  <object class="GtkToggleAction" id="toggleaction1"/>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -519,7 +519,7 @@ for selected days    </property>
                         </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="daytime_column">
-                            <property name="title" translatable="yes">registered time</property>
+                            <property name="title" translatable="yes">time</property>
                             <child>
                               <object class="GtkCellRendererText" id="daytime_text"/>
                               <attributes>
@@ -529,10 +529,10 @@ for selected days    </property>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkTreeViewColumn" id="dayproject_column">
-                            <property name="title" translatable="yes">project</property>
+                          <object class="GtkTreeViewColumn" id="daytype_column">
+                            <property name="title" translatable="yes">type</property>
                             <child>
-                              <object class="GtkCellRendererText" id="dayproject_text"/>
+                              <object class="GtkCellRendererText" id="daytype_text"/>
                               <attributes>
                                 <attribute name="text">3</attribute>
                               </attributes>
@@ -541,7 +541,8 @@ for selected days    </property>
                         </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="dayprojecthours_column">
-                            <property name="title" translatable="yes">column</property>
+                            <property name="title" translatable="yes">registered project</property>
+                            <property name="alignment">0.5</property>
                             <child>
                               <object class="GtkCellRendererText" id="dayprojecthours_text"/>
                               <attributes>

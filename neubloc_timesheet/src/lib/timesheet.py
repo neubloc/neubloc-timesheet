@@ -129,7 +129,7 @@ class Timesheet(object):
         entries = []
 
         for row in rows:
-            soup = BeautifulSoup(str(row))
+            soup = BeautifulSoup(unicode(row))
             columns = soup.findAll('td', id=None)
             
             if len(columns) > 2:
