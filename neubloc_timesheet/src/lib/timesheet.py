@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from datetime import time as time2 
 import re
 
+from threading import Lock
+
 from BeautifulSoup import BeautifulSoup  
 
 from password import *
@@ -24,9 +26,37 @@ class Timesheet(object):
     user = None
     actions = {}
 
-    hourlist = None
-    daylist = None
+    _hourlist = None
+    _daylist = None
 
+    _hourlist_lock = Lock()
+    _daylist_lock = Lock()
+
+    @property
+    def hourlist(self): 
+        self._hourlist_lock.acquire()
+        value = self._hourlist
+        self._hourlist_lock.release()
+        return value
+
+    @hourlist.setter
+    def hourlist(self, value):
+        self._hourlist_lock.acquire()
+        self._hourlist = value
+        self._hourlist_lock.release()
+
+    @property
+    def daylist(self):
+        self._daylist_lock.acquire()
+        value = self._daylist
+        self._daylist_lock.release()
+        return value
+
+    @daylist.setter
+    def daylist(self, value):
+        self._daylist_lock.acquire()
+        self._daylist = value
+        self._daylist_lock.release()
 
     def __init__(self, user = 'mrim', client = Actions.HOME):
         self.client = client
