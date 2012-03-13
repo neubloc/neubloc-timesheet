@@ -46,6 +46,7 @@
     <property name="window_position">center</property>
     <property name="default_width">400</property>
     <property name="default_height">200</property>
+    <property name="destroy_with_parent">True</property>
     <property name="icon_name">neubloc-timesheet</property>
     <property name="opacity">0.5</property>
     <property name="startup_id">Neubloc Timesheet</property>
@@ -63,45 +64,64 @@
         <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkToolbar" id="toolbar1">
+          <object class="GtkBox" id="box8">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
             <child>
-              <object class="GtkToggleToolButton" id="client_home">
-                <property name="use_action_appearance">False</property>
-                <property name="width_request">100</property>
+              <object class="GtkImage" id="image1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="tooltip_text" translatable="yes">Home</property>
-                <property name="use_action_appearance">False</property>
-                <property name="is_important">True</property>
-                <property name="use_underline">True</property>
-                <property name="label_widget">client_label_home</property>
-                <property name="icon_name">go-home</property>
-                <signal name="toggled" handler="on_toggle_client" swapped="no"/>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
+                <property name="pixbuf">neubloc.png</property>
               </object>
               <packing>
                 <property name="expand">True</property>
-                <property name="homogeneous">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
-              <object class="GtkToggleToolButton" id="client_neubloc">
-                <property name="use_action_appearance">False</property>
-                <property name="width_request">100</property>
+              <object class="GtkBox" id="box9">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="tooltip_text" translatable="yes">Neubloc</property>
-                <property name="use_action_appearance">False</property>
-                <property name="is_important">True</property>
-                <property name="use_underline">True</property>
-                <property name="label_widget">client_label_neubloc</property>
-                <property name="icon_name">neubloc-timesheet</property>
-                <signal name="toggled" handler="on_toggle_client" swapped="no"/>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="label7">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Entire month</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="hours">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="vexpand">True</property>
+                    <property name="label" translatable="yes">month</property>
+                    <property name="use_markup">True</property>
+                    <property name="justify">fill</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
-                <property name="expand">True</property>
-                <property name="homogeneous">True</property>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>
@@ -112,76 +132,159 @@
           </packing>
         </child>
         <child>
-          <object class="GtkExpander" id="expander1">
+          <object class="GtkBox" id="box10">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkBox" id="box5">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
+                <property name="homogeneous">True</property>
+                <child>
+                  <object class="GtkLabel" id="label4">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Passed: </property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="today_passed">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">passed</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                      <attribute name="scale" value="1.2"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="box6">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
+                <property name="homogeneous">True</property>
+                <child>
+                  <object class="GtkLabel" id="label5">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Remaining:</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="today_remaining">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">remaining</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                      <attribute name="scale" value="1.2"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkExpander" id="main_expander">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="expanded">True</property>
+            <property name="spacing">3</property>
             <property name="label_fill">True</property>
             <property name="resize_toplevel">True</property>
+            <signal name="activate" handler="on_main_expander_activated" swapped="no"/>
             <child>
               <object class="GtkBox" id="box3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkBox" id="box8">
+                  <object class="GtkToolbar" id="toolbar1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="margin_left">5</property>
-                    <property name="margin_right">5</property>
-                    <property name="margin_top">5</property>
-                    <property name="margin_bottom">5</property>
+                    <property name="toolbar_style">text</property>
                     <child>
-                      <object class="GtkImage" id="image1">
+                      <object class="GtkToggleToolButton" id="client_home">
+                        <property name="use_action_appearance">False</property>
+                        <property name="width_request">100</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_top">10</property>
-                        <property name="margin_bottom">10</property>
-                        <property name="pixbuf">neubloc.png</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_markup" translatable="yes">Home</property>
+                        <property name="tooltip_text" translatable="yes">Home</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="is_important">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="label_widget">client_label_home</property>
+                        <property name="icon_name">go-home</property>
+                        <signal name="toggled" handler="on_toggle_client" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
+                        <property name="homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="box9">
+                      <object class="GtkToggleToolButton" id="client_neubloc">
+                        <property name="use_action_appearance">False</property>
+                        <property name="width_request">100</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                        <child>
-                          <object class="GtkLabel" id="label7">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Entire month</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="hours">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="vexpand">True</property>
-                            <property name="label" translatable="yes">month</property>
-                            <property name="use_markup">True</property>
-                            <property name="justify">fill</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_markup" translatable="yes">Neubloc</property>
+                        <property name="tooltip_text" translatable="yes">Neubloc</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="is_important">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="label_widget">client_label_neubloc</property>
+                        <signal name="toggled" handler="on_toggle_client" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="expand">True</property>
+                        <property name="homogeneous">True</property>
                       </packing>
                     </child>
                   </object>
@@ -233,7 +336,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
@@ -244,7 +347,7 @@
                     <child>
                       <object class="GtkButton" id="start">
                         <property name="use_action_appearance">False</property>
-                        <property name="height_request">60</property>
+                        <property name="height_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -254,8 +357,9 @@
                           <object class="GtkLabel" id="label2">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">start</property>
+                            <property name="label" translatable="yes">Start</property>
                             <attributes>
+                              <attribute name="weight" value="semibold"/>
                               <attribute name="variant" value="small-caps"/>
                               <attribute name="foreground" value="#33af95ac3c98"/>
                             </attributes>
@@ -271,6 +375,7 @@
                     <child>
                       <object class="GtkButton" id="stop">
                         <property name="use_action_appearance">False</property>
+                        <property name="height_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -280,8 +385,9 @@
                           <object class="GtkLabel" id="label1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">stop</property>
+                            <property name="label" translatable="yes">Stop</property>
                             <attributes>
+                              <attribute name="weight" value="semibold"/>
                               <attribute name="variant" value="small-caps"/>
                               <attribute name="foreground" value="#ffff587b587b"/>
                             </attributes>
@@ -301,102 +407,6 @@
                     <property name="position">3</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkBox" id="box10">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="homogeneous">True</property>
-                    <child>
-                      <object class="GtkBox" id="box5">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="margin_top">10</property>
-                        <property name="margin_bottom">10</property>
-                        <property name="homogeneous">True</property>
-                        <child>
-                          <object class="GtkLabel" id="label4">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Passed: </property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="today_passed">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">passed</property>
-                            <attributes>
-                              <attribute name="weight" value="bold"/>
-                              <attribute name="scale" value="1.2"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox" id="box6">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="margin_top">10</property>
-                        <property name="margin_bottom">10</property>
-                        <property name="homogeneous">True</property>
-                        <child>
-                          <object class="GtkLabel" id="label5">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Remaining:</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="today_remaining">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">remaining</property>
-                            <attributes>
-                              <attribute name="weight" value="bold"/>
-                              <attribute name="scale" value="1.2"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">4</property>
-                  </packing>
-                </child>
               </object>
             </child>
             <child type="label">
@@ -405,6 +415,7 @@
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkLabel" id="label8">
+                    <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="hexpand">True</property>
@@ -439,14 +450,14 @@
           </packing>
         </child>
         <child>
-          <object class="GtkExpander" id="expander">
+          <object class="GtkExpander" id="daylist_expander">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="use_underline">True</property>
+            <property name="spacing">3</property>
             <property name="label_fill">True</property>
             <property name="resize_toplevel">True</property>
-            <signal name="show" handler="on_daylist_open" swapped="no"/>
-            <signal name="activate" handler="on_daylist_open" after="yes" swapped="no"/>
+            <signal name="activate" handler="on_daylist_expander_activated" after="yes" swapped="no"/>
             <child>
               <object class="GtkBox" id="box2">
                 <property name="visible">True</property>
@@ -617,6 +628,7 @@
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkLabel" id="label6">
+                    <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Daylist</property>

@@ -42,6 +42,7 @@ setup(
            # modify script_name with the name you want use from shell
            # $ script_name [params]
            'neubloc_timesheet = neubloc_timesheet.src.timesheet:run',
+           'neubloc_timesheet_install_icons = neubloc_timesheet.src.timesheet:install_icons',
         ],
     },
 )

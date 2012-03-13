@@ -34,6 +34,19 @@ class TimesheetUI(Gtk.Application):
                 application_id="apps.neubloc.timesheet", 
                 flags=Gio.ApplicationFlags.FLAGS_NONE)
 
+        #stock = [("neubloc-timesheet", "_Custom Label", 0, 0, None)]
+        #Gtk.stock_add([stock])
+
+        #from gi.repository import GdkPixbuf
+        #factory = Gtk.IconFactory()
+        #pixbuf = GdkPixbuf.Pixbuf.new_from_file('/kp/data/neubloc-timesheet.png')
+        #iconset = Gtk.IconSet.new_from_pixbuf(pixbuf)
+        #factory.add('neubloc-timesheet', iconset)
+        #factory.add_default()
+
+        #theme = Gtk.IconTheme()
+        #print theme.list_icons() 
+
 
     def run(self):
         self.objects_assign()
@@ -106,11 +119,13 @@ class TimesheetUI(Gtk.Application):
         self.days_list = builder.get_object("days_view")
         self.days_selection = builder.get_object('days_selection')
 
-        self.expander = builder.get_object("expander")
+        self.main_expander = builder.get_object("main_expander")
+        self.daylist_expander = builder.get_object("daylist_expander")
         self.statusbar = builder.get_object("statusbar")
         self.project_choose_box = builder.get_object("project_choose_box")
 
         self.daylist_spinner = builder.get_object("daylist_spinner")
+        self.hourlist_spinner = builder.get_object("hourlist_spinner")
         self.window = builder.get_object("window")
 
     def modules_init(self):
@@ -139,12 +154,12 @@ class TimesheetUI(Gtk.Application):
         self._toggle_visibility()
         return True
 
-    @threaded
+    @threaded()
     def on_start(self, data=None):
         self.timesheet.start()
         self._reload()
 
-    @threaded
+    @threaded()
     def on_stop(self, data=None):
         self.timesheet.stop()
         self._reload()
@@ -177,22 +192,26 @@ class TimesheetUI(Gtk.Application):
         self._quit()
 
 
-    @threaded
+    @threaded()
     def on_reload_daylist(self, data=None):
         self._daylist()
 
-    #@threaded
+    @threaded()
     def on_reload_month_hours(self, data=None):
         self._month_hours()
 
-    #@threaded
+    @threaded()
     def on_reload_hourlist(self, data=None):
         self._hourlist()
 
 
-    def on_daylist_open(self, expander=None):
+    def on_daylist_expander_activated(self, expander=None):
         if expander.get_expanded():
             self.emit('reload-daylist')
+        self.main_expander.set_expanded(False)
+
+    def on_main_expander_activated(self, expander=None):
+        self.daylist_expander.set_expanded(False)
 
     ### private
     def _toggle_visibility(self):
@@ -216,8 +235,11 @@ class TimesheetUI(Gtk.Application):
     '''
     Set project hours
     '''
-    @threaded
+    @threaded()
     def on_projecthours_set(self, data=None):
+        # @WARN disabling spinner in self._daylist 
+        GObject.idle_add(self.daylist_spinner.set_visible, True)
+
         radio = [r for r in self.project_buttons[0].get_group() if r.get_active()][0] 
         projectname = radio.get_label()
         project = self.config.get_projects()[projectname]
@@ -258,8 +280,7 @@ class TimesheetUI(Gtk.Application):
     '''
     Today hours
     '''
-    #@threaded(synchronized=False)
-    @threaded
+    @threaded(synchronized=False)
     def _today_hours_thread(self):
         while True:
             self._today_hours()
@@ -302,6 +323,7 @@ class TimesheetUI(Gtk.Application):
     Today hourlist
     '''
     def _hourlist(self):
+        GObject.idle_add(self.hourlist_spinner.set_visible, True)
         self.timesheet.get_hourlist(datetime.now())
         hlist = self.timesheet.hourlist
         hlist.reverse()
@@ -312,6 +334,8 @@ class TimesheetUI(Gtk.Application):
             color = COLORS['red'] if type[1] == "K" else COLORS['green']
 
             self.hours_model.append([str(time), Actions.ext[type], color])
+
+        GObject.idle_add(self.hourlist_spinner.set_visible, False)
 
     '''
     Daylist with project assignments
