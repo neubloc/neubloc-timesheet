@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkIconFactory" id="iconfactory"/>
-  <object class="GtkToggleAction" id="toggleaction1"/>
-  <object class="GtkLabel" id="client_label_home">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="label" translatable="yes">Home</property>
-  </object>
-  <object class="GtkLabel" id="client_label_neubloc">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="label" translatable="yes">Neubloc</property>
-  </object>
   <object class="GtkListStore" id="days_store">
     <columns>
       <!-- column-name nr -->
@@ -39,6 +27,18 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkIconFactory" id="iconfactory"/>
+  <object class="GtkToggleAction" id="toggleaction1"/>
+  <object class="GtkLabel" id="client_label_home">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="label" translatable="yes">Home</property>
+  </object>
+  <object class="GtkLabel" id="client_label_neubloc">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="label" translatable="yes">Neubloc</property>
+  </object>
   <object class="GtkWindow" id="window">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -47,7 +47,7 @@
     <property name="default_width">400</property>
     <property name="default_height">200</property>
     <property name="destroy_with_parent">True</property>
-    <property name="icon_name">neubloc-timesheet</property>
+    <property name="icon">neubloc-timesheet.png</property>
     <property name="opacity">0.5</property>
     <property name="startup_id">Neubloc Timesheet</property>
     <child internal-child="accessible">
