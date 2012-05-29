@@ -5,21 +5,21 @@ import os
 import mechanize
 import time
 from datetime import datetime, timedelta
-from datetime import time as time2 
+from datetime import time as time2
 import re
 
 from threading import Lock
 
-from BeautifulSoup import BeautifulSoup  
+from BeautifulSoup import BeautifulSoup
 
-from password import *
-from actions import *
+from password import Password
+from actions import Actions
 
 DEBUG = bool(os.getenv('DEBUG'))
 NR, NAME, TIME, DESCRIPTION, TIMESTAMP, PROJECTHOURS = range(6)
 
 class Timesheet(object):
-    
+
     url = 'http://neubloc.omnis.pl/'
 
     browser = None
@@ -33,7 +33,7 @@ class Timesheet(object):
     _daylist_lock = Lock()
 
     @property
-    def hourlist(self): 
+    def hourlist(self):
         self._hourlist_lock.acquire()
         value = self._hourlist
         self._hourlist_lock.release()
@@ -84,7 +84,7 @@ class Timesheet(object):
         self.user = self.user.replace("\n", '')
 
         self.browser["name"] = self.user
-        self.browser["pass"] = password 
+        self.browser["pass"] = password
         return self.browser.submit()
 
     def _do(self, action):
@@ -101,7 +101,7 @@ class Timesheet(object):
         self.browser._factory.is_html = True
         self.browser.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == form_id)
 
-    ### public 
+    ### public
     def start(self):
         self._do("start")
 
@@ -116,8 +116,8 @@ class Timesheet(object):
     def get_hourlist(self, date = datetime.now()):
         if DEBUG:
             entries = [
-             (datetime(1,1,1,19, 00, 11).time(), 'OS (Start Dom)'), 
-             (datetime(1,1,1,16, 46, 11).time(), 'DK (Koniec Dom)'), 
+             (datetime(1,1,1,19, 00, 11).time(), 'OS (Start Dom)'),
+             (datetime(1,1,1,16, 46, 11).time(), 'DK (Koniec Dom)'),
              (datetime(1,1,1,8,  34, 58).time(), 'DS (Start Dom)')
             ]
             self.hourlist = entries
@@ -137,7 +137,9 @@ class Timesheet(object):
         for row in rows:
             soup = BeautifulSoup(str(row))
             columns = soup.findAll('td', id=None)
-            
+
+            if 'strokeout' in row.attrs[0][1]: continue
+
             if len(columns) > 2:
                 entry_time = time2( *time.strptime(columns[1].text,"%H:%M:%S")[3:6] )
                 # round to 30 sec
@@ -145,7 +147,7 @@ class Timesheet(object):
 
                 entry_action = columns[2].text
                 entries.append((entry_time, entry_action))
-                
+
         self.hourlist = entries
         return entries
 
@@ -160,8 +162,9 @@ class Timesheet(object):
 
         for row in rows:
             soup = BeautifulSoup(unicode(row))
+
             columns = soup.findAll('td', id=None)
-            
+
             if len(columns) > 2:
                 entry_nr = int(columns[0].b.text)
                 entry_name = columns[1].text
@@ -175,17 +178,17 @@ class Timesheet(object):
                 except KeyError: pass
 
                 # registered projecthours
-                process_projecthours = lambda c: "%s / %s" % (c.span['title'], c.span.text) if c.span.text else None 
+                process_projecthours = lambda c: "%s / %s" % (c.span['title'], c.span.text) if c.span.text else None
                 projecthours = filter(None, [process_projecthours(c) for c in columns[12:]])
                 projecthours = "\n".join(projecthours)
 
-                entries.append((entry_nr, 
-                                entry_name, 
+                entries.append((entry_nr,
+                                entry_name,
                                 entry_time,
-                                entry_description, 
-                                timestamp, 
+                                entry_description,
+                                timestamp,
                                 projecthours))
-                
+
         self.daylist = entries
         return entries
 
@@ -221,7 +224,7 @@ class Timesheet(object):
             delta += (t2-t1)
 
         if len(hlist) % 2 == 1:
-            delta += datetime.now() - datetime.combine(datetime.now(), hlist[-1][0]) 
+            delta += datetime.now() - datetime.combine(datetime.now(), hlist[-1][0])
         passed_delta = delta
 
         # time remaining

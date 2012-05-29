@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
 from lib.timesheet import *
 from lib.config import *
 
-from decorators import threaded 
+from decorators import threaded
 
 DEBUG = bool(os.getenv('DEBUG'))
 COLORS = { 'green': "#33af95ac3c98", 'red': "#ffff587b587b" }
@@ -30,8 +30,8 @@ class TimesheetUI(Gtk.Application):
                      'reload-hourlist': (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, ()) }
 
     def __init__(self):
-        Gtk.Application.__init__(self, 
-                application_id="apps.neubloc.timesheet", 
+        Gtk.Application.__init__(self,
+                application_id="apps.neubloc.timesheet",
                 flags=Gio.ApplicationFlags.FLAGS_NONE)
 
         #stock = [("neubloc-timesheet", "_Custom Label", 0, 0, None)]
@@ -45,7 +45,7 @@ class TimesheetUI(Gtk.Application):
         #factory.add_default()
 
         #theme = Gtk.IconTheme()
-        #print theme.list_icons() 
+        #print theme.list_icons()
 
 
     def run(self):
@@ -60,7 +60,7 @@ class TimesheetUI(Gtk.Application):
         icon_name = 'neubloc-timesheet' if not DEBUG else 'neubloc-timesheet-debug'
         try:
             from gi.repository import AppIndicator3 as appindicator
-            indicator = appindicator.Indicator.new ("neubloc-timesheet", icon_name, 
+            indicator = appindicator.Indicator.new ("neubloc-timesheet", icon_name,
                                               appindicator.IndicatorCategory.APPLICATION_STATUS)
             indicator.set_status(appindicator.IndicatorStatus.ACTIVE)
             indicator.set_attention_icon(icon_name)
@@ -91,14 +91,14 @@ class TimesheetUI(Gtk.Application):
         Gdk.threads_enter()
         Gtk.main()
         Gdk.threads_leave()
-     
+
     def objects_assign(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
 
         builder = Gtk.Builder()
-        builder.add_from_file("%s%s" % (current_dir, "/static/gui.glade")) 
-        builder.connect_signals(self)       
-        
+        builder.add_from_file("%s%s" % (current_dir, "/static/gui.glade"))
+        builder.connect_signals(self)
+
         self.connect("reload-daylist", self.on_reload_daylist)
         self.connect("reload-month-hours", self.on_reload_month_hours)
         self.connect("reload-hourlist", self.on_reload_hourlist)
@@ -130,8 +130,8 @@ class TimesheetUI(Gtk.Application):
 
     def modules_init(self):
         self.config = Config()
-        self.timesheet = Timesheet(self.config.get_user(), 
-                                   self.config.get_client())       
+        self.timesheet = Timesheet(self.config.get_user(),
+                                   self.config.get_client())
 
     def actionbuttons_init(self):
         if self.timesheet.client == Actions.HOME:
@@ -149,10 +149,12 @@ class TimesheetUI(Gtk.Application):
             self.project_buttons.append(radio)
             radio.show()
 
-
     def on_quit(self, widget, data=None):
         self._toggle_visibility()
         return True
+
+    def on_terminate(self, data=None):
+        self._quit()
 
     @threaded()
     def on_start(self, data=None):
@@ -165,7 +167,7 @@ class TimesheetUI(Gtk.Application):
         self._reload()
 
     def on_toggle_client(self, button):
-        button_name = Gtk.Buildable.get_name(button) 
+        button_name = Gtk.Buildable.get_name(button)
 
         if(button_name == 'client_home'):
             v  = self.toggle_home.get_active()
@@ -191,6 +193,9 @@ class TimesheetUI(Gtk.Application):
     def on_icon_popup(self, data=None, arg1=None, arg2=None):
         self._quit()
 
+    @threaded()
+    def on_reload(self, data=None):
+        self._reload()
 
     @threaded()
     def on_reload_daylist(self, data=None):
@@ -237,10 +242,10 @@ class TimesheetUI(Gtk.Application):
     '''
     @threaded()
     def on_projecthours_set(self, data=None):
-        # @WARN disabling spinner in self._daylist 
+        # @WARN disabling spinner in self._daylist
         GObject.idle_add(self.daylist_spinner.set_visible, True)
 
-        radio = [r for r in self.project_buttons[0].get_group() if r.get_active()][0] 
+        radio = [r for r in self.project_buttons[0].get_group() if r.get_active()][0]
         projectname = radio.get_label()
         project = self.config.get_projects()[projectname]
 
@@ -266,7 +271,7 @@ class TimesheetUI(Gtk.Application):
         hours, minutes = daydata[TIME].split(':')
 
         if self._is_projecthours_day_ready(daydata):
-            self.timesheet.set_projecthours(daydata[TIMESTAMP], project, hours, minutes) 
+            self.timesheet.set_projecthours(daydata[TIMESTAMP], project, hours, minutes)
         else:
             self.projecthours_errors.append("%s/%s" %(daydata[NR], daydata[NAME]))
 
@@ -308,7 +313,7 @@ class TimesheetUI(Gtk.Application):
         delta_h = delta.seconds/3600
         delta_m = delta.seconds/60 - delta_h*60
         delta_s = delta.seconds    - delta_h*3600 - delta_m*60
-        return "%d:%.2d:%.2d" % (delta_h, delta_m, delta_s)        
+        return "%d:%.2d:%.2d" % (delta_h, delta_m, delta_s)
 
     '''
     Total month hours
@@ -317,7 +322,7 @@ class TimesheetUI(Gtk.Application):
         hours = self.timesheet.hours()
         color = COLORS['red'] if hours[0] == '-' else COLORS['green']
         sign = "-" if hours[0] == '-' else "+"
-        self.hours.set_markup("<span color='%s' size='large' font_weight='bold'>%s %s</span>" % (color, sign, hours[1:]) ) 
+        self.hours.set_markup("<span color='%s' size='large' font_weight='bold'>%s %s</span>" % (color, sign, hours[1:]) )
 
     '''
     Today hourlist
@@ -346,11 +351,11 @@ class TimesheetUI(Gtk.Application):
         self.days_model.clear()
 
         for (nr, name, time, description, timestamp, projecthours) in daylist:
-            self.days_model.append([nr, 
-                                    name, 
-                                    time, 
+            self.days_model.append([nr,
+                                    name,
+                                    time,
                                     description,
-                                    str(timestamp), 
+                                    str(timestamp),
                                     projecthours])
 
         GObject.idle_add(self.daylist_spinner.set_visible, False)
