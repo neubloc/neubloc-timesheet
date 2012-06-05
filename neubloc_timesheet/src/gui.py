@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
 from lib.timesheet import *
 from lib.config import *
 
-from decorators import threaded
+from lib.decorators import threaded
 
 DEBUG = bool(os.getenv('DEBUG'))
 COLORS = { 'green': "#33af95ac3c98", 'red': "#ffff587b587b" }
