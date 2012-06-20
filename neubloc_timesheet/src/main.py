@@ -4,7 +4,7 @@
 import os, signal
 import subprocess, shlex
 import setproctitle
-from gui import TimesheetUI
+from gui.timesheetui import TimesheetUI
 
 def run():
     setproctitle.setproctitle('neubloc_timesheet')

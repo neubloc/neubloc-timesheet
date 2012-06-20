@@ -11,11 +11,10 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 from gi.repository import Gtk, Gio, Gdk, GObject
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
-
-from lib.timesheet import *
-from lib.config import *
-
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir + '/../lib')
+from lib.timesheet import Timesheet, NR, NAME, TIME, DESCRIPTION, TIMESTAMP, PROJECTHOURS
+from lib.config import Config, Actions
 from lib.decorators import threaded
 
 DEBUG = bool(os.getenv('DEBUG'))
@@ -34,29 +33,21 @@ class TimesheetUI(Gtk.Application):
                 application_id="apps.neubloc.timesheet",
                 flags=Gio.ApplicationFlags.FLAGS_NONE)
 
-        #stock = [("neubloc-timesheet", "_Custom Label", 0, 0, None)]
-        #Gtk.stock_add([stock])
-
-        #from gi.repository import GdkPixbuf
-        #factory = Gtk.IconFactory()
-        #pixbuf = GdkPixbuf.Pixbuf.new_from_file('/kp/data/neubloc-timesheet.png')
-        #iconset = Gtk.IconSet.new_from_pixbuf(pixbuf)
-        #factory.add('neubloc-timesheet', iconset)
-        #factory.add_default()
-
-        #theme = Gtk.IconTheme()
-        #print theme.list_icons()
-
-
     def run(self):
-        self.objects_assign()
-        self.modules_init()
-        self.actionbuttons_init()
+        # init app
+        self.config = Config()
+        self.timesheet = Timesheet(self.config.get_user(), self.config.get_client())
 
+        # init ui
+        self.ui_objects_assign()
+        self.ui_buttons_init()
+
+        # run minimized
         if self.config.get_minimized() == False:
             self._toggle_visibility()
         self.window.set_keep_above(True)
 
+        # status icon handle normal/unity
         icon_name = 'neubloc-timesheet' if not DEBUG else 'neubloc-timesheet-debug'
         try:
             from gi.repository import AppIndicator3 as appindicator
@@ -81,29 +72,34 @@ class TimesheetUI(Gtk.Application):
             self.status_icon.connect("activate", self.on_icon_activated)
             self.status_icon.connect("popup-menu", self.on_icon_popup)
 
+        # reload on start
         self.emit("reload-month-hours")
         self.emit("reload-hourlist")
 
-        # threads
+        # today time counter thread
         self.today_hours_thr = self._today_hours_thread()
 
+        # gtk run
         GObject.threads_init()
         Gdk.threads_enter()
         Gtk.main()
         Gdk.threads_leave()
 
-    def objects_assign(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+    def ui_objects_assign(self):
+        """ Assign UI objects at start """
+        global current_dir
 
+        # glade init
         builder = Gtk.Builder()
-        builder.add_from_file("%s%s" % (current_dir, "/static/gui.glade"))
+        builder.add_from_file("%s%s" % (current_dir, "/../static/gui.glade"))
         builder.connect_signals(self)
 
+        # signals connect
         self.connect("reload-daylist", self.on_reload_daylist)
         self.connect("reload-month-hours", self.on_reload_month_hours)
         self.connect("reload-hourlist", self.on_reload_hourlist)
 
-        # objects
+        # UI objects
         self.hourlist = builder.get_object("hourlist")
         self.hours = builder.get_object("hours")
         self.today_hours = builder.get_object("today")
@@ -128,12 +124,7 @@ class TimesheetUI(Gtk.Application):
         self.hourlist_spinner = builder.get_object("hourlist_spinner")
         self.window = builder.get_object("window")
 
-    def modules_init(self):
-        self.config = Config()
-        self.timesheet = Timesheet(self.config.get_user(),
-                                   self.config.get_client())
-
-    def actionbuttons_init(self):
+    def ui_buttons_init(self):
         if self.timesheet.client == Actions.HOME:
             self.toggle_home.set_active(True)
         else:
@@ -149,11 +140,21 @@ class TimesheetUI(Gtk.Application):
             self.project_buttons.append(radio)
             radio.show()
 
+    # --- teminate actions ----
+
     def on_quit(self, widget, data=None):
         self._toggle_visibility()
         return True
 
     def on_terminate(self, data=None):
+        self._quit()
+
+    # --- status icon actions ----
+
+    def on_icon_activated(self, data=None, buf=None):
+        self._toggle_visibility()
+
+    def on_icon_popup(self, data=None, arg1=None, arg2=None):
         self._quit()
 
     @threaded()
@@ -180,18 +181,13 @@ class TimesheetUI(Gtk.Application):
 
         if(button_name == 'client_neubloc'):
             v  = self.toggle_neubloc.get_active()
-            self.toggle_home.set_active( (v+1)%2 )
+            self.toggle_home.set_active((v+1)%2)
 
             self.timesheet.client = Actions.NEUBLOC
             self.timesheet.actions = Actions.get(Actions.NEUBLOC)
 
         self.config.set_client(self.timesheet.client)
 
-    def on_icon_activated(self, data=None, buf=None):
-        self._toggle_visibility()
-
-    def on_icon_popup(self, data=None, arg1=None, arg2=None):
-        self._quit()
 
     @threaded()
     def on_reload(self, data=None):
@@ -218,9 +214,9 @@ class TimesheetUI(Gtk.Application):
     def on_main_expander_activated(self, expander=None):
         self.daylist_expander.set_expanded(False)
 
-    ### private
-    def _toggle_visibility(self):
+    # --- private ---
 
+    def _toggle_visibility(self):
         self.config.set_minimized(self.window.get_visible())
         if self.window.get_visible():
             self.window.hide() #_on_delete()
@@ -233,13 +229,10 @@ class TimesheetUI(Gtk.Application):
         signal.alarm(1)
 
     def _reload(self):
-        self._hourlist()
         self._month_hours()
+        self._hourlist()
         self._daylist()
 
-    '''
-    Set project hours
-    '''
     @threaded()
     def on_projecthours_set(self, data=None):
         # @WARN disabling spinner in self._daylist

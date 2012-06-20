@@ -2,7 +2,7 @@
 
 import os
 from setuptools import setup, find_packages
-#from DistUtilsExtra.command import build_icons 
+#from DistUtilsExtra.command import build_icons
 
 
 def read(filename):
@@ -21,7 +21,7 @@ setup(
     packages = find_packages(),
     package_data = {'neubloc_timesheet.src.static': ['*']},
     include_package_data = True,
-    long_description = DESCRIPTION, 
+    long_description = DESCRIPTION,
     classifiers = [
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
@@ -39,10 +39,8 @@ setup(
     zip_safe = False,
     entry_points = {
         'console_scripts': [
-           # modify script_name with the name you want use from shell
-           # $ script_name [params]
-           'neubloc_timesheet = neubloc_timesheet.src.timesheet:run',
-           'neubloc_timesheet_install_icons = neubloc_timesheet.src.timesheet:install_icons',
+           'neubloc_timesheet = neubloc_timesheet.src.main:run',
+           'neubloc_timesheet_install_icons = neubloc_timesheet.src.main:install_icons',
         ],
     },
 )

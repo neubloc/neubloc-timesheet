@@ -32,6 +32,13 @@ class Timesheet(object):
     _hourlist_lock = Lock()
     _daylist_lock = Lock()
 
+    def __init__(self, user = 'mrim', client = Actions.HOME):
+        self.client = client
+        self.user = user
+
+        self.actions = Actions.get(client)
+        #self._login()
+
     @property
     def hourlist(self):
         self._hourlist_lock.acquire()
@@ -57,13 +64,6 @@ class Timesheet(object):
         self._daylist_lock.acquire()
         self._daylist = value
         self._daylist_lock.release()
-
-    def __init__(self, user = 'mrim', client = Actions.HOME):
-        self.client = client
-        self.user = user
-
-        self.actions = Actions.get(client)
-        #self._login()
 
     def _reload(self):
         self.browser = mechanize.Browser()
