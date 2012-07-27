@@ -12,6 +12,7 @@ gi.require_version("Gdk", "3.0")
 from gi.repository import Gtk, Gio, Gdk, GObject
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir + '/..')
 sys.path.append(current_dir + '/../lib')
 from lib.timesheet import Timesheet, NR, NAME, TIME, DESCRIPTION, TIMESTAMP, PROJECTHOURS
 from lib.config import Config, Actions

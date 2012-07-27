@@ -138,12 +138,17 @@ class Timesheet(object):
             soup = BeautifulSoup(str(row))
             columns = soup.findAll('td', id=None)
 
-            if 'strokeout' in row.attrs[0][1]: continue
+            try:
+                if 'strokeout' in row.attrs[0][1]: continue
+            except IndexError: pass
 
             if len(columns) > 2:
                 entry_time = time2( *time.strptime(columns[1].text,"%H:%M:%S")[3:6] )
                 # round to 30 sec
-                entry_time = entry_time.replace(minute=entry_time.minute-1, second=0) if entry_time.second >= 30 else entry_time.replace(second=0)
+                try:
+                    entry_time = entry_time.replace(minute=entry_time.minute-1, second=0) if entry_time.second >= 30 else entry_time.replace(second=0)
+                except ValueError:
+                    pass
 
                 entry_action = columns[2].text
                 entries.append((entry_time, entry_action))
