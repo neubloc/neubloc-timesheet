@@ -154,6 +154,8 @@ class Timesheet(object):
                 entries.append((entry_time, entry_action))
 
         self.hourlist = entries
+        #FIXME
+        print entries[-1]
         return entries
 
     def get_daylist(self, date = datetime.now()):
