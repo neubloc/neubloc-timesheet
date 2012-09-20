@@ -1,1 +1,1 @@
-from gconf_config import *
+from file_config import *
