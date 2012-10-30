@@ -12,7 +12,7 @@ class Password(object):
             try:
                 password = keyring.get_password(Password.service, user)
                 if password:
-                    return password 
+                    return password
                 else:
                     raise "no password in keyring"
             except:
@@ -25,11 +25,11 @@ class Password(object):
     @staticmethod
     def read_and_set(user):
         password = subprocess.check_output([
-            'zenity', '--entry', 
-            '--title', 'Karta Pracy password', 
-            '--text',  'Enter your password for Timesheet (%s):' % user, 
-            '--entry-text', 'password', 
+            'zenity', '--entry',
+            '--title', 'Karta Pracy password',
+            '--text',  'Enter your password for Timesheet (%s):' % user,
+            '--entry-text', 'password',
             '--hide-text'
         ])
         Password.set(user, password.replace("\n", ''))
-        
+

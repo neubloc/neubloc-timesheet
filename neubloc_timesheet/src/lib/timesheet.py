@@ -204,8 +204,9 @@ class Timesheet(object):
         self._open('task_popup.php?date=%s' % timestamp)
         self.browser.select_form(nr=0)
 
-        self.browser["company_id"] = [str(project[0])]
-        self.browser["project_id"] = [str(project[1])]
+        company_id, project_id = project.split(',')
+        self.browser["company_id"] = [str(company_id)]
+        self.browser["project_id"] = [str(project_id)]
         self.browser["task_type_id"] = ["1"]
         self.browser["num_hours"] = str(hours)
         self.browser["num_mins"] = str(minutes)
