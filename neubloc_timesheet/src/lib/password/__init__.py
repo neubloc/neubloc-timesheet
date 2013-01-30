@@ -1,1 +1,1 @@
-from keyring_password import *
+from input_password import *
